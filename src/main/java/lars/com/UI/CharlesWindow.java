@@ -15,8 +15,8 @@ import java.util.prefs.Preferences;
 public class CharlesWindow extends CharacterWindow {
 
     private static final Preferences prefs = Preferences.userNodeForPackage(CharlesWindow.class);
-    private static final String SURPRISE_REVEALED = "surpriseRevealed";
-    private static final String GLITCH_ENABLED    = "glitchEnabled";
+    private static final String SURPRISE_REVEALED    = "surpriseRevealed";
+    private static final String GLITCH_ENABLED       = "glitchEnabled";
 
     // UI-компоненты (принадлежат только Шарлю)
     private ContextMenu        contextMenu;
@@ -71,8 +71,8 @@ public class CharlesWindow extends CharacterWindow {
             resetIdleTimers();
         }
 
-        if (isBirthdayOpen)   { closeBirthday(); return; }
-        if (isSettingsOpen)   { closeSettings();  return; }
+        if (isBirthdayOpen) { closeBirthday(); return; }
+        if (isSettingsOpen) { closeSettings();  return; }
 
         clearBubble();
         dialogueQueue.interrupt();
@@ -130,6 +130,8 @@ public class CharlesWindow extends CharacterWindow {
 
     public void setContextMenuOpen(boolean v) { isContextMenuOpen = v; }
 
+    public void setBirthdayOpen(boolean v) { isBirthdayOpen = v; }
+
     public void showConfirmationDialog() {
         isConfirmationOpen = true;
         confirmationWindow = new ConfirmationWindow(
@@ -164,7 +166,7 @@ public class CharlesWindow extends CharacterWindow {
     }
 
     // ════════════════════════════════════════════════════════════════════════
-    //  Настройки (глитч и т.д.)
+    //  Настройки (глитч, сюрприз и т.д.)
     // ════════════════════════════════════════════════════════════════════════
 
     public boolean isSurpriseRevealed() {

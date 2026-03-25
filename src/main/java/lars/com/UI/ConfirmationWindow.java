@@ -14,20 +14,18 @@ public class ConfirmationWindow extends JWindow {
     private static final int OUR_WIDTH = 300;
     private static final int OUR_HEIGHT = 150;
 
-    // Отступы
     private static final int TEXT_PADDING_TOP = 40;
     private static final int BUTTON_PADDING = 40;
     private static final int BUTTON_WIDTH = 80;
     private static final int BUTTON_HEIGHT = 35;
     private static final int BUTTON_SPACING = 20;
 
-    // Шрифт
     private static final int FONT_SIZE = 13;
     private static final String FONT_NAME = "Georgia";
     private static final Color TEXT_COLOR = Color.WHITE;
     private static final int BORDER_THICKNESS = 1;
 
-    private final AmonWindow amonWindow;
+    private final CharlesWindow charlesWindow;
     private BufferedImage backgroundImage;
     private ConfirmationPanel confirmationPanel;
 
@@ -35,11 +33,12 @@ public class ConfirmationWindow extends JWindow {
     private final Runnable onConfirm;
     private final Runnable onCancel;
 
-    public ConfirmationWindow(String message, AmonWindow amonWindow, Runnable onConfirm, Runnable onCancel) {
-        this.message = message;
-        this.amonWindow = amonWindow;
-        this.onConfirm = onConfirm;
-        this.onCancel = onCancel;
+    public ConfirmationWindow(String message, CharlesWindow charlesWindow,
+                              Runnable onConfirm, Runnable onCancel) {
+        this.message       = message;
+        this.charlesWindow = charlesWindow;
+        this.onConfirm     = onConfirm;
+        this.onCancel      = onCancel;
 
         loadBackgroundImage();
         initializeWindow();
@@ -57,102 +56,79 @@ public class ConfirmationWindow extends JWindow {
     }
 
     private void positionDialog() {
-        Point amonLocation = amonWindow.getLocation();
-
-        int x = amonLocation.x - getWidth() - 10;
-        int y = amonLocation.y + 130;
-
+        Point loc = charlesWindow.getLocation();
+        int x = loc.x - getWidth() - 10;
+        int y = loc.y + 130;
         setLocation(x, y);
     }
 
     private void loadBackgroundImage() {
         try {
-            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("frames/reaction.png");
-
-            if (inputStream != null) {
-                backgroundImage = ImageIO.read(inputStream);
-            } else {
-                System.out.println("Фон диалога не найден в ресурсах");
+            InputStream is = getClass().getClassLoader()
+                    .getResourceAsStream("frames/reaction.png");
+            if (is != null) {
+                backgroundImage = ImageIO.read(is);
             }
         } catch (IOException e) {
-            System.out.println("Ошибка загрузки фона диалога: " + e.getMessage());
+            System.out.println("Ошибка загрузки фона подтверждения");
         }
     }
 
-    public void cleanup() {
-        dispose();
-        System.out.println("Диалог подтверждения закрыт");
+    private void drawStringWithBorder(Graphics2D g2d, String text, int x, int y) {
+        g2d.setColor(new Color(0, 0, 0, 150));
+        for (int dx = -BORDER_THICKNESS; dx <= BORDER_THICKNESS; dx++) {
+            for (int dy = -BORDER_THICKNESS; dy <= BORDER_THICKNESS; dy++) {
+                if (dx != 0 || dy != 0) g2d.drawString(text, x + dx, y + dy);
+            }
+        }
+        g2d.setColor(TEXT_COLOR);
+        g2d.drawString(text, x, y);
     }
 
     private class ConfirmationPanel extends JPanel {
-        private Rectangle yesButtonBounds;
-        private Rectangle noButtonBounds;
-        private boolean yesButtonHovered = false;
-        private boolean noButtonHovered = false;
 
-        public ConfirmationPanel() {
+        private Rectangle yesButton;
+        private Rectangle noButton;
+        private boolean yesHovered = false;
+        private boolean noHovered = false;
+
+        ConfirmationPanel() {
             setOpaque(false);
             setPreferredSize(new Dimension(OUR_WIDTH, OUR_HEIGHT));
 
-            // Вычисляем позиции кнопок
-            int totalButtonWidth = BUTTON_WIDTH * 2 + BUTTON_SPACING;
-            int startX = (OUR_WIDTH - totalButtonWidth) / 2;
-            int buttonY = OUR_HEIGHT - BUTTON_HEIGHT - BUTTON_PADDING;
+            int totalWidth = BUTTON_WIDTH * 2 + BUTTON_SPACING;
+            int startX = (OUR_WIDTH - totalWidth) / 2;
+            int buttonY = OUR_HEIGHT - BUTTON_HEIGHT - 25;
 
-            yesButtonBounds = new Rectangle(startX, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT);
-            noButtonBounds = new Rectangle(startX + BUTTON_WIDTH + BUTTON_SPACING, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT);
+            yesButton = new Rectangle(startX, buttonY, BUTTON_WIDTH, BUTTON_HEIGHT);
+            noButton  = new Rectangle(startX + BUTTON_WIDTH + BUTTON_SPACING, buttonY,
+                    BUTTON_WIDTH, BUTTON_HEIGHT);
 
-            setupMouseListener();
-        }
-
-        private void setupMouseListener() {
-            addMouseListener(new MouseAdapter() {
+            addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
                 @Override
-                public void mouseReleased(MouseEvent e) {
-                    Point clickPoint = e.getPoint();
-
-                    if (yesButtonBounds.contains(clickPoint)) {
-                        cleanup();
-                        if (onConfirm != null) {
-                            onConfirm.run();
-                        }
-                    } else if (noButtonBounds.contains(clickPoint)) {
-                        cleanup();
-                        if (onCancel != null) {
-                            onCancel.run();
-                        }
-                    }
-                }
-
-                @Override
-                public void mouseExited(MouseEvent e) {
-                    yesButtonHovered = false;
-                    noButtonHovered = false;
+                public void mouseMoved(MouseEvent e) {
+                    yesHovered = yesButton.contains(e.getPoint());
+                    noHovered  = noButton.contains(e.getPoint());
                     repaint();
                 }
             });
 
-            addMouseMotionListener(new MouseAdapter() {
+            addMouseListener(new MouseAdapter() {
                 @Override
-                public void mouseMoved(MouseEvent e) {
-                    Point mousePoint = e.getPoint();
+                public void mouseExited(MouseEvent e) {
+                    yesHovered = noHovered = false;
+                    repaint();
+                }
 
-                    boolean wasYesHovered = yesButtonHovered;
-                    boolean wasNoHovered = noButtonHovered;
-
-                    yesButtonHovered = yesButtonBounds.contains(mousePoint);
-                    noButtonHovered = noButtonBounds.contains(mousePoint);
-
-                    // Перерисовываем только если состояние изменилось
-                    if (wasYesHovered != yesButtonHovered || wasNoHovered != noButtonHovered) {
-                        repaint();
-                    }
-
-                    // Меняем курсор
-                    if (yesButtonHovered || noButtonHovered) {
-                        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                    } else {
-                        setCursor(Cursor.getDefaultCursor());
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                    Point p = e.getPoint();
+                    if (yesButton.contains(p)) {
+                        dispose();
+                        if (onConfirm != null) onConfirm.run();
+                    } else if (noButton.contains(p)) {
+                        dispose();
+                        if (onCancel != null) onCancel.run();
                     }
                 }
             });
@@ -162,77 +138,35 @@ public class ConfirmationWindow extends JWindow {
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             Graphics2D g2d = (Graphics2D) g;
-
-            // Включаем антиалиасинг
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-            // Рисуем фоновое изображение
             if (backgroundImage != null) {
                 g2d.drawImage(backgroundImage, 0, 0, OUR_WIDTH, OUR_HEIGHT, this);
             }
 
-            // Рисуем текст вопроса
-            drawTextWithBorder(g2d, message);
+            // Текст сообщения
+            g2d.setFont(new Font(FONT_NAME, Font.BOLD, FONT_SIZE));
+            FontMetrics fm = g2d.getFontMetrics();
+            int textX = (OUR_WIDTH - fm.stringWidth(message)) / 2;
+            drawStringWithBorder(g2d, message, textX, TEXT_PADDING_TOP);
 
-            // Рисуем кнопки
-            drawButton(g2d, yesButtonBounds, "Да", yesButtonHovered, new Color(79, 71, 73));
-            drawButton(g2d, noButtonBounds, "Нет", noButtonHovered, new Color(79, 71, 73));
+            // Кнопки
+            Color btnColor = new Color(79, 71, 73);
+            drawButton(g2d, yesButton, "Да", yesHovered, btnColor);
+            drawButton(g2d, noButton,  "Нет", noHovered, btnColor);
         }
 
-        private void drawTextWithBorder(Graphics2D g2d, String text) {
-            Font font = new Font(FONT_NAME, Font.BOLD, FONT_SIZE);
-            g2d.setFont(font);
-
-            FontMetrics fm = g2d.getFontMetrics();
-            int textWidth = fm.stringWidth(text);
-            int x = (OUR_WIDTH - textWidth) / 2;
-            int y = TEXT_PADDING_TOP + fm.getAscent();
-
-            // Рисуем чёрную обводку
-            g2d.setColor(Color.BLACK);
-            for (int dx = -BORDER_THICKNESS; dx <= BORDER_THICKNESS; dx++) {
-                for (int dy = -BORDER_THICKNESS; dy <= BORDER_THICKNESS; dy++) {
-                    if (dx != 0 || dy != 0) {
-                        g2d.drawString(text, x + dx, y + dy);
-                    }
-                }
-            }
-
-            // Рисуем основной текст
-            g2d.setColor(TEXT_COLOR);
-            g2d.drawString(text, x, y);
-        }
-
-        private void drawButton(Graphics2D g2d, Rectangle bounds, String text, boolean isHovered, Color baseColor) {
-            // Цвет кнопки (ярче при наведении)
-            Color buttonColor = isHovered ? baseColor.brighter() : baseColor;
-
-            // Рисуем фон кнопки с закругленными углами
-            g2d.setColor(buttonColor);
-            g2d.fillRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, 10, 10);
-
-            // Рисуем границу кнопки
-            g2d.setColor(buttonColor.darker());
-            g2d.setStroke(new BasicStroke(2));
-            g2d.drawRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, 10, 10);
-
-            // Рисуем текст кнопки
-            Font buttonFont = new Font(FONT_NAME, Font.BOLD, 14);
-            g2d.setFont(buttonFont);
-            FontMetrics fm = g2d.getFontMetrics();
-
-            int textWidth = fm.stringWidth(text);
-            int textX = bounds.x + (bounds.width - textWidth) / 2;
-            int textY = bounds.y + ((bounds.height - fm.getHeight()) / 2) + fm.getAscent();
-
-            // Тень текста
-            g2d.setColor(new Color(0, 0, 0, 100));
-            g2d.drawString(text, textX + 1, textY + 1);
-
-            // Основной текст
+        private void drawButton(Graphics2D g2d, Rectangle bounds, String label,
+                                boolean hovered, Color color) {
+            g2d.setColor(hovered ? color.brighter() : color);
+            g2d.fillRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, 8, 8);
             g2d.setColor(Color.WHITE);
-            g2d.drawString(text, textX, textY);
+            g2d.setFont(new Font(FONT_NAME, Font.PLAIN, FONT_SIZE));
+            FontMetrics fm = g2d.getFontMetrics();
+            int tx = bounds.x + (bounds.width - fm.stringWidth(label)) / 2;
+            int ty = bounds.y + (bounds.height + fm.getAscent()) / 2 - 2;
+            g2d.drawString(label, tx, ty);
         }
     }
 }

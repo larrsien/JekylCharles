@@ -4,7 +4,7 @@ import lars.com.model.DialogueLine;
 
 import javax.swing.*;
 import java.util.*;
-import java.util.Timer;
+import javax.swing.Timer;
 import java.util.function.Consumer;
 
 /**

@@ -3,7 +3,6 @@ package lars.com.browser;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import lars.com.PetController;
-import lars.com.UI.AmonWindow;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -11,7 +10,7 @@ import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
 public class JCSocketServer {
-    private static final int PORT = 37842; // Фиксированный порт
+    private static final int PORT = 37842;
     private final PetController petController;
     private final BrowserReactionLibrary reactionLibrary;
     private final Gson gson;
@@ -22,13 +21,12 @@ public class JCSocketServer {
     private static final long COOLDOWN_MS = 1000;
 
     public JCSocketServer(PetController petController) {
-        this.petController = petController;
+        this.petController   = petController;
         this.reactionLibrary = new BrowserReactionLibrary();
-        this.gson = new Gson();
-        this.running = false;
+        this.gson            = new Gson();
+        this.running         = false;
     }
 
-    // мы запускаем сокет-сервер в отдельном потоке, чтобы приложение не блокировалось
     public void start() {
         if (running) {
             System.out.println("Socket server уже запущен");
@@ -38,8 +36,8 @@ public class JCSocketServer {
         serverThread = new Thread(() -> {
             try {
                 serverSocket = new ServerSocket();
-                serverSocket.setReuseAddress(true); // ← вот это добавь
-                serverSocket.bind(new java.net.InetSocketAddress(PORT)); // ← и замени эту строку
+                serverSocket.setReuseAddress(true);
+                serverSocket.bind(new java.net.InetSocketAddress(PORT));
                 running = true;
                 System.out.println("Socket Server запущен на порту " + PORT);
 
@@ -48,8 +46,6 @@ public class JCSocketServer {
                         Socket clientSocket = serverSocket.accept();
                         System.out.println("Браузерное расширение подключилось");
 
-                        // Обрабатываем каждое подключение в отдельном потоке
-//                        new Thread(() -> handleClient(clientSocket)).start();
                         Thread clientThread = new Thread(() -> handleClient(clientSocket));
                         clientThread.setDaemon(true);
                         clientThread.start();
@@ -62,7 +58,8 @@ public class JCSocketServer {
                 }
             } catch (IOException e) {
                 System.err.println("Не удалось запустить Socket Server: " + e.getMessage());
-            }}, "JCSocketServer");
+            }
+        }, "JCSocketServer");
 
         serverThread.setDaemon(true);
         serverThread.start();
@@ -86,7 +83,7 @@ public class JCSocketServer {
                 clientSocket.close();
                 System.out.println("Браузерное расширение отключилось");
             } catch (IOException e) {
-                // игнорим
+                // ignore
             }
         }
     }
@@ -98,14 +95,13 @@ public class JCSocketServer {
 
             System.out.println("Получено от расширения: " + type);
 
-            // Пропускаем событие EXTENSION_CONNECTED без фильтрации
             if (type.equals("EXTENSION_CONNECTED")) {
                 System.out.println("Расширение подключено!");
-                sendResponse(out, "Амон приветствует Вас!");
+                sendResponse(out, "Приветствуем!");
                 return;
             }
 
-            // ФИЛЬТРАЦИЯ: Проверяем cooldown
+            // Cooldown
             long currentTime = System.currentTimeMillis();
             if (currentTime - lastReactionTime < COOLDOWN_MS) {
                 System.out.println("Cooldown активен, событие пропущено");
@@ -140,10 +136,11 @@ public class JCSocketServer {
             }
 
             if (reaction != null) {
-                lastReactionTime = currentTime; // Обновляем время последней реакции
-                System.out.println("Амон говорит: " + reaction);
-                petController.react(category);
-                sendResponse(out, "Реакция показана: " + reaction);
+                lastReactionTime = currentTime;
+                System.out.println("Реакция: " + reaction);
+                // BrowserReactionLibrary возвращает готовый текст → шлём как реплику Шарля
+                petController.charlesReact(reaction);
+                sendResponse(out, "Реакция показана");
             }
 
         } catch (Exception e) {
@@ -156,7 +153,6 @@ public class JCSocketServer {
         response.addProperty("status", "ok");
         response.addProperty("message", message);
         response.addProperty("timestamp", System.currentTimeMillis());
-
         out.println(gson.toJson(response));
     }
 

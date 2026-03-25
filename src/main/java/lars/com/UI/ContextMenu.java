@@ -12,7 +12,7 @@ import java.util.Random;
 
 public class ContextMenu extends JWindow {
 
-    private static final int OUR_WIDTH  = 230;
+    private static final int OUR_WIDTH = 230;
     private static final int OUR_HEIGHT = 318;
 
     private static final int FONT_SIZE = 13;
@@ -21,10 +21,10 @@ public class ContextMenu extends JWindow {
     private static final int BORDER_THICKNESS = 1;
     private static final int TEXT_PADDING_TOP = 49;
 
-    private static final Color BUTTON_COLOR  = new Color(79, 71, 73);
-    private static final int BUTTON_WIDTH  = 148;
+    private static final Color BUTTON_COLOR = new Color(79, 71, 73);
+    private static final int BUTTON_WIDTH = 148;
     private static final int BUTTON_HEIGHT = 34;
-    private static final int BUTTON_GAP    = 10;
+    private static final int BUTTON_GAP = 10;
 
     private final Runnable onTimerClick;
     private final Runnable onBirthdayClick;
@@ -36,10 +36,10 @@ public class ContextMenu extends JWindow {
     private Rectangle settingsButtonBounds;
     private Rectangle exitButtonBounds;
 
-    private boolean surpriseHovered  = false;
-    private boolean timerHovered     = false;
-    private boolean settingsHovered  = false;
-    private boolean exitHovered      = false;
+    private boolean surpriseHovered = false;
+    private boolean timerHovered = false;
+    private boolean settingsHovered = false;
+    private boolean exitHovered = false;
 
     private static final String HEADER = "Хм-м, что же\nВы хотите сделать?";
 
@@ -59,8 +59,8 @@ public class ContextMenu extends JWindow {
     private final Random random = new Random();
 
     public ContextMenu(CharlesWindow charlesWindow, Runnable onBirthdayClick, Runnable onTimerClick) {
-        this.charlesWindow   = charlesWindow;
-        this.onTimerClick    = onTimerClick;
+        this.charlesWindow = charlesWindow;
+        this.onTimerClick = onTimerClick;
         this.onBirthdayClick = onBirthdayClick;
 
         loadBackgroundImage();
@@ -81,15 +81,15 @@ public class ContextMenu extends JWindow {
         setBackground(new Color(0, 0, 0, 0));
         setAlwaysOnTop(true);
 
-        int buttonX    = (OUR_WIDTH - BUTTON_WIDTH) / 2;
-        int firstBtnY  = TEXT_PADDING_TOP + 50;
+        int buttonX = (OUR_WIDTH - BUTTON_WIDTH) / 2;
+        int firstBtnY = TEXT_PADDING_TOP + 50;
 
-        surpriseButtonBounds  = new Rectangle(buttonX, firstBtnY, BUTTON_WIDTH, BUTTON_HEIGHT);
-        timerButtonBounds     = new Rectangle(buttonX, firstBtnY + BUTTON_HEIGHT + BUTTON_GAP,
+        surpriseButtonBounds = new Rectangle(buttonX, firstBtnY, BUTTON_WIDTH, BUTTON_HEIGHT);
+        timerButtonBounds = new Rectangle(buttonX, firstBtnY + BUTTON_HEIGHT + BUTTON_GAP,
                 BUTTON_WIDTH, BUTTON_HEIGHT);
-        settingsButtonBounds  = new Rectangle(buttonX, timerButtonBounds.y + BUTTON_HEIGHT + BUTTON_GAP,
+        settingsButtonBounds = new Rectangle(buttonX, timerButtonBounds.y + BUTTON_HEIGHT + BUTTON_GAP,
                 BUTTON_WIDTH, BUTTON_HEIGHT);
-        exitButtonBounds      = new Rectangle(buttonX, settingsButtonBounds.y + BUTTON_HEIGHT + BUTTON_GAP,
+        exitButtonBounds = new Rectangle(buttonX, settingsButtonBounds.y + BUTTON_HEIGHT + BUTTON_GAP,
                 BUTTON_WIDTH, BUTTON_HEIGHT);
 
         add(new ContextPanel());
@@ -115,18 +115,18 @@ public class ContextMenu extends JWindow {
                             chars[i] = GLITCH_CHARS[random.nextInt(GLITCH_CHARS.length)];
                         }
                     }
-                    glitchText    = new String(chars);
+                    glitchText = new String(chars);
                     glitchOffsetX = random.nextInt(5) - 2;
                     glitchOffsetY = random.nextInt(5) - 2;
-                    glitchColor   = new Color(
+                    glitchColor = new Color(
                             200 + random.nextInt(56),
                             random.nextInt(100),
                             random.nextInt(100));
                 } else {
-                    glitchText    = "???";
+                    glitchText = "???";
                     glitchOffsetX = 0;
                     glitchOffsetY = 0;
-                    glitchColor   = Color.WHITE;
+                    glitchColor = Color.WHITE;
                 }
                 repaint();
             }
@@ -199,10 +199,10 @@ public class ContextMenu extends JWindow {
                 @Override
                 public void mouseMoved(MouseEvent e) {
                     Point p = e.getPoint();
-                    surpriseHovered  = surpriseButtonBounds.contains(p);
-                    timerHovered     = timerButtonBounds.contains(p);
-                    settingsHovered  = settingsButtonBounds.contains(p);
-                    exitHovered      = exitButtonBounds.contains(p);
+                    surpriseHovered = surpriseButtonBounds.contains(p);
+                    timerHovered = timerButtonBounds.contains(p);
+                    settingsHovered = settingsButtonBounds.contains(p);
+                    exitHovered = exitButtonBounds.contains(p);
                     repaint();
                 }
             });
@@ -260,9 +260,9 @@ public class ContextMenu extends JWindow {
             } else {
                 drawButton(g2d, surpriseButtonBounds, "Сюрприз!", surpriseHovered, BUTTON_COLOR);
             }
-            drawButton(g2d, timerButtonBounds,    "Таймер",    timerHovered,    BUTTON_COLOR);
+            drawButton(g2d, timerButtonBounds, "Таймер", timerHovered, BUTTON_COLOR);
             drawButton(g2d, settingsButtonBounds, "Настройки", settingsHovered, BUTTON_COLOR);
-            drawButton(g2d, exitButtonBounds,     "Выход",     exitHovered,     BUTTON_COLOR);
+            drawButton(g2d, exitButtonBounds, "Выход", exitHovered, BUTTON_COLOR);
         }
     }
 }

@@ -15,27 +15,27 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class InternalProcessMonitoring {
+
     private final PetController petController;
     private final OperatingSystem operatingSystem;
-    private final DualResponseLibrary dualResponseLibrary;
     private final ScheduledExecutorService scheduler;
     private Set<String> previousProcesses;
-    private final SystemInfo systemInfo;
 
     private static final String[] KEYWORDS = {
-            "discord", "telegram", "clipstudio", "sai2", "steam", "chrome", "opera", "bloodborne", "shadps4", "peak",
-            "warframe", "roblox", "phasmophobia", "nightreign", "blender", "bandicam", "obs64",
-            "torrent", "amneziavpn", "minecraft", "kaspersky"
+            "discord", "telegram", "clipstudio", "sai2", "steam",
+            "chrome", "opera", "bloodborne", "shadps4", "peak",
+            "warframe", "roblox", "phasmophobia", "nightreign",
+            "blender", "bandicam", "obs64", "torrent", "amneziavpn",
+            "minecraft", "kaspersky"
     };
 
     public InternalProcessMonitoring(PetController petController) {
-        this.petController = petController;
-        this.systemInfo = new SystemInfo();
+        this.petController   = petController;
+        SystemInfo systemInfo = new SystemInfo();
         this.operatingSystem = systemInfo.getOperatingSystem();
-        this.dualResponseLibrary = new DualResponseLibrary();
-        this.scheduler = Executors.newScheduledThreadPool(1);
+        this.scheduler       = Executors.newScheduledThreadPool(1);
 
-        // Снимаем снимок текущих процессов СРАЗУ, чтобы не реагировать на то, что уже запущено
+        // Снимок текущих процессов, чтобы не реагировать на уже запущенное
         this.previousProcesses = new HashSet<>();
         for (OSProcess p : operatingSystem.getProcesses()) {
             previousProcesses.add(p.getName().toLowerCase());
@@ -85,16 +85,17 @@ public class InternalProcessMonitoring {
     }
 
     private void notifyNewProcess(String processName) {
-        System.out.println("Обнаружен новый процесс:" + processName);
+        System.out.println("Обнаружен новый процесс: " + processName);
 
-        String reaction = getProcessReaction(processName);
-        if (reaction != null) {
+        String category = mapProcessToCategory(processName);
+        if (category != null) {
             SwingUtilities.invokeLater(() -> petController.react(category));
         }
     }
 
     private void notifyProcessClosed(String processName) {
         System.out.println("Процесс закрыт: " + processName);
+        // Можно добавить категории типа "discord_closed" если нужно
     }
 
     private boolean isCompatible(String processName) {
@@ -106,50 +107,37 @@ public class InternalProcessMonitoring {
         return false;
     }
 
-    private String getProcessReaction(String process) {
-        String toLower = process.toLowerCase();
+    /**
+     * Маппит имя процесса на категорию из DualResponseLibrary.
+     * Возвращает null, если категория не определена.
+     */
+    private String mapProcessToCategory(String processName) {
+        String lower = processName.toLowerCase();
 
-        if (toLower.contains("telegram")) {
-            return responseLibrary.getRandomResponses("telegram");
-        } else if (toLower.contains("discord")) {
-            return responseLibrary.getRandomResponses("discord");
-        } else if (toLower.contains("steam")) {
-            return responseLibrary.getRandomResponses("steam");
-        } else if (toLower.contains("chrome") || toLower.contains("opera") || toLower.contains("firefox")) {
-            return responseLibrary.getRandomResponses("browser");
-        } else if (toLower.contains("clipstudio") || toLower.contains("sai2")) {
-            return responseLibrary.getRandomResponses("painting");
-        } else if (toLower.contains("bloodborne") || toLower.contains("shadps4")) {
-            return responseLibrary.getRandomResponses("bloodborne");
-        } else if (toLower.contains("peak")) {
-            return responseLibrary.getRandomResponses("peak");
-        } else if (toLower.contains("warframe")) {
-            return responseLibrary.getRandomResponses("warframe");
-        } else if (toLower.contains("roblox")) {
-            return responseLibrary.getRandomResponses("roblox");
-        } else if (toLower.contains("phasmophobia")) {
-            return responseLibrary.getRandomResponses("phasmophobia");
-        } else if (toLower.contains("nightreign")) {
-            return responseLibrary.getRandomResponses("nightreign");
-        } else if (toLower.contains("blender")) {
-            return responseLibrary.getRandomResponses("blender");
-        } else if (toLower.contains("bandicam") || toLower.contains("obs64")) {
-            return responseLibrary.getRandomResponses("recording");
-        } else if (toLower.contains("torrent")) {
-            return responseLibrary.getRandomResponses("torrent");
-        } else if (toLower.contains("amneziavpn")) {
-            return responseLibrary.getRandomResponses("amnezia");
-        } else if (toLower.contains("minecraft")) {
-            return responseLibrary.getRandomResponses("minecraft");
-        } else if (toLower.contains("kaspersky")) {
-            return responseLibrary.getRandomResponses("kaspersky");
-        }
+        if (lower.contains("telegram"))      return "telegram";
+        if (lower.contains("discord"))       return "discord";
+        if (lower.contains("steam"))         return "steam";
+        if (lower.contains("chrome")
+                || lower.contains("opera"))         return "browser";
+        if (lower.contains("clipstudio")
+                || lower.contains("sai2"))          return "drawing";
+        if (lower.contains("blender"))       return "blender";
+        if (lower.contains("obs64")
+                || lower.contains("bandicam"))      return "recording";
+        if (lower.contains("torrent"))       return "torrent";
+        if (lower.contains("amneziavpn"))    return "vpn";
+        if (lower.contains("kaspersky"))     return "antivirus";
+        if (lower.contains("minecraft"))     return "minecraft";
 
+        // Игры
+        if (lower.contains("bloodborne")
+                || lower.contains("shadps4")
+                || lower.contains("warframe")
+                || lower.contains("roblox")
+                || lower.contains("phasmophobia")
+                || lower.contains("nightreign")
+                || lower.contains("peak"))          return "gaming";
 
-
-        else {
-            return responseLibrary.getRandomResponses("default");
-        }
-
+        return "default";
     }
 }

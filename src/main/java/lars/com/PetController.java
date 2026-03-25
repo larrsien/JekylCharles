@@ -30,8 +30,8 @@ import java.util.List;
 public class PetController {
 
     private final DialogueQueue       queue;
-    private final JekyllWindow        jekyll;
-    private final CharlesWindow       charles;
+    private JekyllWindow        jekyll;
+    private CharlesWindow       charles;
     private final DualResponseLibrary library;
 
     // ════════════════════════════════════════════════════════════════════════
@@ -46,9 +46,9 @@ public class PetController {
         // Маршрутизатор: очередь знает, чей showBubble() вызвать
         queue = new DialogueQueue(line -> {
             if (line.speaker == CharacterId.JEKYLL) {
-                jekyll.showBubble(line.text);
+                PetController.this.jekyll.showBubble(line.text);
             } else {
-                charles.showBubble(line.text);
+                PetController.this.charles.showBubble(line.text);
             }
         });
 
@@ -191,7 +191,7 @@ public class PetController {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             SpriteManager jekyllSprites  = new SpriteManager("jekyll");
-            SpriteManager charlesSprites = new SpriteManager("sprites/charles");
+            SpriteManager charlesSprites = new SpriteManager("charles");
 
             PetController controller = new PetController(jekyllSprites, charlesSprites);
 

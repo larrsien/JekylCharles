@@ -1,7 +1,7 @@
 package lars.com.events;
 
-import lars.com.UI.AmonWindow;
 import lars.com.UI.BugCloneWindow;
+import lars.com.UI.CharlesWindow;
 import lars.com.graphic.SpriteManager;
 
 import javax.swing.*;
@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 public class BugCloneEvent {
 
-    private final PetController controller;
+    private final CharlesWindow charlesWindow;
     private final SpriteManager spriteManager;
     private final ScheduledExecutorService scheduler;
     private final Random random;
@@ -30,8 +30,8 @@ public class BugCloneEvent {
 
     private ScheduledFuture<?> nextBugTask;
 
-    public BugCloneEvent(PetController controller, SpriteManager spriteManager) {
-        this.controller    = controller;
+    public BugCloneEvent(CharlesWindow charlesWindow, SpriteManager spriteManager) {
+        this.charlesWindow = charlesWindow;
         this.spriteManager = spriteManager;
         this.scheduler     = Executors.newScheduledThreadPool(1);
         this.random        = new Random();
@@ -78,7 +78,7 @@ public class BugCloneEvent {
         int screenHeight = screenBounds.height;
 
         // Берём позицию Шарля как опорную
-        Point charlesLocation = controller.getCharles().getLocation();
+        Point charlesLocation = charlesWindow.getLocation();
         int amonWidth  = 217;
         int amonHeight = 371;
 
