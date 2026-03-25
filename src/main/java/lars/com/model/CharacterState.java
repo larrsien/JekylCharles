@@ -1,6 +1,6 @@
 package lars.com.model;
 
-public enum AmonState {
+public enum CharacterState {
     IDLE("idle"), // 3 штуки
     CURIOUS("curious"), // 5 штук
     DRAGGING("dragging"), // 1 штука
@@ -9,7 +9,7 @@ public enum AmonState {
 
     private final String stateName;
 
-    AmonState(String stateName) {
+    CharacterState(String stateName) {
         this.stateName = stateName;
     }
 

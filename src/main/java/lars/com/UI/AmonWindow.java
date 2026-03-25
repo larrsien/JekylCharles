@@ -1,7 +1,7 @@
 package lars.com.UI;
 
 import lars.com.graphic.SpriteManager;
-import lars.com.model.AmonState;
+import lars.com.model.CharacterState;
 import lars.com.reactions.ResponseLibrary;
 
 import javax.swing.*;
@@ -19,7 +19,7 @@ public class AmonWindow extends JWindow {
     private static final int OUR_HEIGHT=350;
 
     private final SpriteManager spriteManager;
-    private AmonState currentState;
+    private CharacterState currentState;
     private int currentFrame;
     private final Random random;
 
@@ -72,7 +72,7 @@ public class AmonWindow extends JWindow {
     public AmonWindow(SpriteManager spriteManager) {
         this.spriteManager = spriteManager;
         this.random = new Random();
-        this.currentState = AmonState.IDLE;
+        this.currentState = CharacterState.IDLE;
         this.currentFrame = 0;
         this.responseLibrary = new ResponseLibrary();
 
@@ -91,11 +91,11 @@ public class AmonWindow extends JWindow {
             return;
         }
 
-        setState(AmonState.CURIOUS);
+        setState(CharacterState.CURIOUS);
         showReactionBubble(reaction);
 
         // через пять минут возвращаемся в состояние idle
-        Timer returnToIdle = new Timer(300000, e -> setState(AmonState.IDLE));
+        Timer returnToIdle = new Timer(300000, e -> setState(CharacterState.IDLE));
         returnToIdle.setRepeats(false);
         returnToIdle.start();
     }
@@ -156,7 +156,7 @@ public class AmonWindow extends JWindow {
         amonPanel = new AmonPanel();
         add(amonPanel);
 
-        currentFrame = random.nextInt(Math.max(1, spriteManager.getFrameCount(AmonState.IDLE)));
+        currentFrame = random.nextInt(Math.max(1, spriteManager.getFrameCount(CharacterState.IDLE)));
 
         positionWindow();
     }
@@ -201,7 +201,7 @@ public class AmonWindow extends JWindow {
                     Point currentLocation = getLocation();
                     baseY = currentLocation.y;
                     floatingOffset = 0;
-                    setState(AmonState.IDLE);
+                    setState(CharacterState.IDLE);
                 } else if (pressedPoint != null) {
                     handleClick(e);
                 }
@@ -218,7 +218,7 @@ public class AmonWindow extends JWindow {
 
                     if (distance > DRAG_THRESHOLD && !isDragging) {
                         isDragging = true;
-                        setState(AmonState.DRAGGING);
+                        setState(CharacterState.DRAGGING);
 
                         idleToSleepTimer.restart();
                         idleTimer.restart();
@@ -274,7 +274,7 @@ public class AmonWindow extends JWindow {
 
     private void initializeIdleTimers() {
         idleTimer = new Timer(7 * 60 * 1000, e -> {
-            if (currentState == AmonState.IDLE) {
+            if (currentState == CharacterState.IDLE) {
                 checkForIdleReaction();
             }
         });
@@ -282,8 +282,8 @@ public class AmonWindow extends JWindow {
         idleTimer.start();
 
         idleToSleepTimer = new Timer(10 * 60 * 1000, e -> {
-            if (currentState == AmonState.IDLE) {
-                setState(AmonState.SLEEPING);
+            if (currentState == CharacterState.IDLE) {
+                setState(CharacterState.SLEEPING);
             }
         });
         idleToSleepTimer.setRepeats(true);
@@ -339,8 +339,8 @@ public class AmonWindow extends JWindow {
         }
 
         // Будим из сна при правом клике
-        if (currentState == AmonState.SLEEPING) {
-            setState(AmonState.IDLE);
+        if (currentState == CharacterState.SLEEPING) {
+            setState(CharacterState.IDLE);
             idleToSleepTimer.restart();
             idleTimer.restart();
         }
@@ -412,7 +412,7 @@ public class AmonWindow extends JWindow {
         boolean revealed = prefs.getBoolean(SURPRISE_REVEALED, false);
 
         if (!revealed) {
-            setState(AmonState.CURIOUS);
+            setState(CharacterState.CURIOUS);
             showReactionBubble("О? Неужто Вас заинтересовали эти " +
                     "знаки вопроса? Надо же, какое трогательное любопытство! Так уж вышло, что я " +
                     "ненадолго позаимствовал у Ваших дорогих друзей пару поздравлений. Не переживайте, никто из них " +
@@ -472,8 +472,8 @@ public class AmonWindow extends JWindow {
             // дальше не возвращаемся, даём показать реакцию
         }
 
-        if (currentState == AmonState.SLEEPING) {
-            setState(AmonState.IDLE);
+        if (currentState == CharacterState.SLEEPING) {
+            setState(CharacterState.IDLE);
             idleToSleepTimer.restart();
             idleTimer.restart();
             return; // реакцию не показываем, просто просыпаемся
@@ -486,7 +486,7 @@ public class AmonWindow extends JWindow {
         showReactionBubble(reaction);
     }
 
-    public void setState(AmonState newState) {
+    public void setState(CharacterState newState) {
         if (currentState != newState) {
             currentState = newState;
 

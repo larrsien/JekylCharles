@@ -1,7 +1,7 @@
 package lars.com.UI;
 
 import lars.com.graphic.SpriteManager;
-import lars.com.model.AmonState;
+import lars.com.model.CharacterState;
 
 import javax.swing.*;
 import java.awt.*;
@@ -45,7 +45,7 @@ public class BugCloneWindow extends JWindow {
 
     private void initializeAnimation() {
         int frameCount = selectedVariant != null ? selectedVariant.size() : 1;
-        animationTimer = new Timer(spriteManager.getFrameDelay(AmonState.BUG), e -> {
+        animationTimer = new Timer(spriteManager.getFrameDelay(CharacterState.BUG), e -> {
             currentFrame = (currentFrame + 1) % frameCount;
             bugClonePanel.repaint();
         });

@@ -1,6 +1,6 @@
 package lars.com.graphic;
 
-import lars.com.model.AmonState;
+import lars.com.model.CharacterState;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -15,8 +15,8 @@ import java.util.regex.Pattern;
 
 public class SpriteManager {
     private static final String SPRITE_PATH = "sprites/";
-    private final Map<AmonState, List<BufferedImage>> spriteCache;
-    private final Map<AmonState, Integer> frameDelays;
+    private final Map<CharacterState, List<BufferedImage>> spriteCache;
+    private final Map<CharacterState, Integer> frameDelays;
     private final Map<Integer, List<BufferedImage>> bugVariants = new HashMap<>();
     private final Random random = new Random();
 
@@ -26,13 +26,13 @@ public class SpriteManager {
         loadDefaultFrameDelays();
     }
 
-    private void loadSprites(AmonState state) {
+    private void loadSprites(CharacterState state) {
 
         String path = SPRITE_PATH + state.getStateName() + "/";
         List<BufferedImage> frames = new ArrayList<>();
 
         try {
-            String firstFileName = (state == AmonState.BUG) ? "amon_0.gif" : "amon_0.png";
+            String firstFileName = (state == CharacterState.BUG) ? "amon_0.gif" : "amon_0.png";
             InputStream inputStream = getClass().getClassLoader().getResourceAsStream(path + firstFileName);
 
             if (inputStream == null) {
@@ -43,7 +43,7 @@ public class SpriteManager {
                 }
 
                 // для BUG ищем GIF файлы
-                if (state == AmonState.BUG) {
+                if (state == CharacterState.BUG) {
                     File[] gifFiles = file.listFiles((dir, name) -> name.startsWith("amon_") && name.endsWith(".gif"));
 
                     if (gifFiles != null && gifFiles.length > 0) {
@@ -87,7 +87,7 @@ public class SpriteManager {
                 }
             } else {
                 // из jar — для BUG ищем GIF
-                if (state == AmonState.BUG) {
+                if (state == CharacterState.BUG) {
                     int fileIndex = 0;
                     while (true) {
                         InputStream gifStream = getClass().getClassLoader()
@@ -129,7 +129,7 @@ public class SpriteManager {
     public List<BufferedImage> getRandomBugVariant() {
         if (bugVariants.isEmpty()) {
             // fallback: возвращаем всё что есть
-            return getSprites(AmonState.BUG);
+            return getSprites(CharacterState.BUG);
         }
         int randomIndex = random.nextInt(bugVariants.size());
         return bugVariants.get(randomIndex);
@@ -177,15 +177,15 @@ public class SpriteManager {
     }
 
     private void loadDefaultFrameDelays() {
-        frameDelays.put(AmonState.IDLE, 150);
-        frameDelays.put(AmonState.CURIOUS, 120);
-        frameDelays.put(AmonState.DRAGGING, 50);
-        frameDelays.put(AmonState.SLEEPING, 200);
-        frameDelays.put(AmonState.BUG, 120);
+        frameDelays.put(CharacterState.IDLE, 150);
+        frameDelays.put(CharacterState.CURIOUS, 120);
+        frameDelays.put(CharacterState.DRAGGING, 50);
+        frameDelays.put(CharacterState.SLEEPING, 200);
+        frameDelays.put(CharacterState.BUG, 120);
     }
 
     // найти один фрейм для состояния
-    public BufferedImage getFrame(AmonState state, int frameIndex) {
+    public BufferedImage getFrame(CharacterState state, int frameIndex) {
         List<BufferedImage> sprites = getSprites(state);
         if (sprites == null || sprites.isEmpty()) {
             return null;
@@ -193,24 +193,24 @@ public class SpriteManager {
         return sprites.get(frameIndex % sprites.size());
     }
 
-    public List<BufferedImage> getSprites(AmonState state) {
+    public List<BufferedImage> getSprites(CharacterState state) {
         if (!spriteCache.containsKey(state)) {
             loadSprites(state);
         }
         return spriteCache.get(state);
     }
 
-    public int getFrameCount(AmonState state) {
+    public int getFrameCount(CharacterState state) {
         List<BufferedImage> sprites = getSprites(state);
         return sprites != null ? sprites.size() : 0;
     }
 
-    public int getFrameDelay(AmonState state) {
+    public int getFrameDelay(CharacterState state) {
         return frameDelays.getOrDefault(state, 100);
     }
 
     public void preloadAll() {
-        for (AmonState amonState : AmonState.values()) {
+        for (CharacterState amonState : CharacterState.values()) {
             loadSprites(amonState);
         }
     }
