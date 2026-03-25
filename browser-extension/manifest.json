@@ -1,0 +1,34 @@
+{
+  "manifest_version": 3,
+  "name": "Amon",
+  "version": "1.0",
+  "description": "Monitors browser activity for Amon Desktop Pet",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7irWqobK5eHlRXLY2cs2DqvkcS17DwOhXMNCbwXI/3yfD6iahMOWwV6mVC+52PPWrnkatSuV3cNwDxX1xtLH6Zvb7tbomL8Al7qGuwg8P7ZQIrhTNbscZtRhPEtxxPuK6UP2vMB66dl3mvxZZEIDsqjZ5fxSt5awSaaXlxKgs+wtsyNuupfBbGZ1uc4C25zb2YeiX/ElvFl9BwB9q5ho+DpipSAMYTb9ompkqB44I2RRNSiztY+Qne1UkUIg/XvdfliouGVRUbjW9ycRmGTQ7qvpHVU8qFSlMDKBwlETWCK4N+yRxicmzl1M2LX8uCg6GBOo0CPNHnoEzfaziTRtjwIDAQAB",
+
+  "permissions": [
+    "tabs",
+    "webNavigation",
+    "nativeMessaging"
+  ],
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "host_permissions": [
+    "<all_urls>"
+  ],
+
+  "icons": {
+    "16": "icon128.png",
+    "48": "icon128.png",
+    "128": "icon128.png"
+  },
+  "action": {
+    "default_icon": {
+      "16": "icon128.png",
+      "48": "icon128.png",
+      "128": "icon128.png"
+    }
+  }
+}

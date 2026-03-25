@@ -1,0 +1,7 @@
+{
+  "name": "com.lars.amon.browser",
+  "description": "Amon Desktop Pet Browser Monitor",
+  "path": "PLACEHOLDER",
+  "type": "stdio",
+  "allowed_origins": ["chrome-extension://epdgpmgmlogldiaebaanjfnlfidgaehb/"]
+}
