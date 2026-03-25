@@ -1,7 +1,7 @@
 package lars.com.model;
 
 public enum CharacterState {
-    IDLE("idle"), // 3 штуки
+    IDLE("sprites/charles/idle"), // 3 штуки
     CURIOUS("curious"), // 5 штук
     DRAGGING("dragging"), // 1 штука
     SLEEPING("sleeping"), // 1 штука

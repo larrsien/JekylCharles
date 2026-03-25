@@ -44,15 +44,15 @@ public class BirthdayDialog extends JWindow {
             "с днём рождения!! <33 я ещё чуть-чуть повожу вас за нос, потому что МОГУ себе позволить. в архиве Амона есть «личное дело» — к нему подходит пароль номер 1. там я расписала побольше всякого, но а пока: знайте, что я вами очень-очень сильно дорожу, восхищаюсь и бесконечно желаю вам счастья! БЕЗУМНЕЙШЕ каждый день радуюсь, что вы есть в моей жизни и что мы дружим. вы восхитительный человек — в очень и очень многих аспектах. пожалуйста, будьте счастливы и верьте в себя и свою ценность (в особенности для других людей!). может возникнуть закономерный вопрос: «вран, а зачем было так выебываться и создавать вхол эсс АМОНА, чтобы это сказать или же доказать?», но знаете ЧТО.           SOLVE MY FUCKING RIDDLES!!!! (звук с щенком пибблом wash my bellay) надеюсь, вам нравится этот подарочек <3 пусть ваш день рождения пройдёт замечательно! в конце будут части аж двух паролей. это тоже мой подарок. или это подарок от Амона? кто знает! с днём рождения!! йееей!!! [GLITCH:5\\3\\URE и 4\\3\\1R]"
     };
 
-    private final AmonWindow amonWindow;
+    private final CharlesWindow charlesWindow;
     private BufferedImage backgroundImage;
 
     private final Rectangle[] buttonBounds = new Rectangle[PEOPLE.length];
     private final boolean[] hovered = new boolean[PEOPLE.length];
 
 
-    public BirthdayDialog(AmonWindow amonWindow) {
-        this.amonWindow = amonWindow;
+    public BirthdayDialog(CharlesWindow charlesWindow) {
+        this.charlesWindow = charlesWindow;
 
         loadBackgroundImage();
         initializeWindow();
@@ -66,7 +66,7 @@ public class BirthdayDialog extends JWindow {
     }
 
     private void close() {
-        amonWindow.setBirthdayOpen(false);
+        charlesWindow.setBirthdayOpen(false);
         dispose();
     }
 
@@ -108,7 +108,7 @@ public class BirthdayDialog extends JWindow {
     }
 
     private void positionDialog() {
-        Point amonLocation = amonWindow.getLocation();
+        Point amonLocation = charlesWindow.getLocation();
 
         int x = amonLocation.x - getWidth() + 20;
         int y = amonLocation.y - 50;
@@ -144,9 +144,9 @@ public class BirthdayDialog extends JWindow {
                     Point p = e.getPoint();
                     for (int i = 0; i < PEOPLE.length; i++) {
                         if (buttonBounds[i].contains(p)) {
-                            amonWindow.setBirthdayOpen(false);
+                            charlesWindow.setBirthdayOpen(false);
                             dispose();
-                            amonWindow.reactToEvent(CONGRATULATIONS[i]);
+                            charlesWindow.reactToEvent(CONGRATULATIONS[i]);
                             return;
                         }
                     }

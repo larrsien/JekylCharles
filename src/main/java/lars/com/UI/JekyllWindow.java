@@ -4,6 +4,7 @@ import lars.com.dialogue.DialogueQueue;
 import lars.com.graphic.SpriteManager;
 import lars.com.model.CharacterId;
 import lars.com.model.CharacterState;
+import lars.com.model.DialogueLine;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,12 +18,12 @@ public class JekyllWindow extends CharacterWindow {
     private final List<String> rightClickPhrases;
     private final Random random = new Random();
 
-    public JekyllWindow(SpriteManager spriteManager, DialogueQueue dialogueQueue, List<String> rightClickPhrases) {
+    public JekyllWindow(SpriteManager spriteManager,
+                        DialogueQueue dialogueQueue,
+                        List<String> rightClickPhrases) {
         super(CharacterId.JEKYLL, spriteManager, dialogueQueue);
         this.rightClickPhrases = rightClickPhrases;
     }
-
-
 
     @Override
     protected JPanel buildSpritePanel() {
@@ -32,12 +33,15 @@ public class JekyllWindow extends CharacterWindow {
                 super.paintComponent(g);
                 BufferedImage sprite = currentSprite();
                 if (sprite != null) {
-                    g.drawImage(sprite, 0, 0, getWidth(), getHeight(), null);
+                    Graphics2D g2d = (Graphics2D) g;
+                    g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                            RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+                    g2d.drawImage(sprite, 0, 0, getWidth(), getHeight(), null);
                 }
             }
         };
         panel.setOpaque(false);
-        panel.setPreferredSize(new Dimension(DEFAULT_WIDTH, DEFAULT_HEIGHT));
+        panel.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
         return panel;
     }
 
@@ -54,6 +58,6 @@ public class JekyllWindow extends CharacterWindow {
         if (rightClickPhrases == null || rightClickPhrases.isEmpty()) return;
 
         String text = rightClickPhrases.get(random.nextInt(rightClickPhrases.size()));
-        dialogueQueue.add(new lars.com.model.DialogueLine(CharacterId.JEKYLL, text));
+        dialogueQueue.add(new DialogueLine(CharacterId.JEKYLL, text));
     }
 }

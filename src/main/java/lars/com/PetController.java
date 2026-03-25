@@ -5,6 +5,7 @@ import lars.com.UI.JekyllWindow;
 import lars.com.dialogue.DialogueQueue;
 import lars.com.graphic.SpriteManager;
 import lars.com.model.CharacterId;
+import lars.com.model.CharacterState;
 import lars.com.model.DialogueLine;
 import lars.com.reactions.DualResponseLibrary;
 
@@ -15,30 +16,27 @@ import java.util.List;
 /**
  * PetController — центральная точка входа приложения.
  *
- * Заменяет старый Main / AmonWindow как точку старта.
- * Создаёт:
- *  - DialogueQueue с функцией-маршрутизатором бабла
- *  - JekyllWindow (спрайты Джекилла)
- *  - CharlesWindow (спрайты Шарля + всё меню)
- *  - DualResponseLibrary
- *  - ProcessMonitor, BrowserMonitor, MealReminder — все они теперь
- *    вызывают controller.react(category) вместо amonWindow.reactToEvent()
+ * Создаёт оба окна, связывает их через DialogueQueue
+ * и обеспечивает синхронизацию состояний.
  *
- * ── Позиционирование ────────────────────────────────────────────────────────
- *  По умолчанию Джекилл — правый нижний угол, Шарль — чуть левее.
- *  Оба перетаскиваются независимо.
+ * ── Синхронизация состояний ──────────────────────────────────────────────
+ *  Когда один персонаж засыпает (SLEEPING) → второй тоже засыпает.
+ *  Когда один просыпается (IDLE)           → второй тоже просыпается.
+ *  CURIOUS — не синхронизируется (каждый любопытствует по-своему).
+ *  DRAGGING — не синхронизируется.
+ *  BUG — не синхронизируется.
  * ──────────────────────────────────────────────────────────────────────────
  */
 public class PetController {
 
-    private final DialogueQueue        queue;
-    private final JekyllWindow         jekyll;
-    private final CharlesWindow        charles;
-    private final DualResponseLibrary  library;
+    private final DialogueQueue       queue;
+    private final JekyllWindow        jekyll;
+    private final CharlesWindow       charles;
+    private final DualResponseLibrary library;
 
-    // ──────────────────────────────────────────────────────────────────────────
+    // ════════════════════════════════════════════════════════════════════════
     //  Конструктор
-    // ──────────────────────────────────────────────────────────────────────────
+    // ════════════════════════════════════════════════════════════════════════
 
     public PetController(SpriteManager jekyllSprites,
                          SpriteManager charlesSprites) {
@@ -54,7 +52,7 @@ public class PetController {
             }
         });
 
-        // Фразы для ПКМ Джекилла — определяем здесь, передаём в конструктор
+        // Фразы для ПКМ Джекилла
         List<String> jekyllRightClickPhrases = List.of(
                 "...",
                 "Зачем Вы это делаете?",
@@ -70,20 +68,64 @@ public class PetController {
         jekyll  = new JekyllWindow(jekyllSprites, queue, jekyllRightClickPhrases);
         charles = new CharlesWindow(charlesSprites, queue);
 
+        // ── Подключаем синхронизацию состояний ──────────────────────────────
+        jekyll.setOnStateChange(this::onCharacterStateChanged);
+        charles.setOnStateChange(this::onCharacterStateChanged);
+
         positionWindows();
 
         jekyll.setVisible(true);
         charles.setVisible(true);
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    //  Реакция на события (вызывается ProcessMonitor, BrowserMonitor и т.д.)
-    // ──────────────────────────────────────────────────────────────────────────
+    // ════════════════════════════════════════════════════════════════════════
+    //  Синхронизация состояний
+    // ════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Вызывается, когда один из персонажей меняет состояние.
+     * Определяет, нужно ли синхронизировать второго.
+     *
+     * Используем setStateSilent() чтобы не вызвать бесконечный цикл:
+     *   Jekyll.setState → onStateChange → Charles.setStateSilent (без коллбэка)
+     */
+    private void onCharacterStateChanged(CharacterId who, CharacterState newState) {
+        // Синхронизируем только SLEEPING и IDLE (пробуждение)
+        switch (newState) {
+            case SLEEPING:
+                // Оба засыпают
+                if (who == CharacterId.JEKYLL) {
+                    charles.setStateSilent(CharacterState.SLEEPING);
+                } else {
+                    jekyll.setStateSilent(CharacterState.SLEEPING);
+                }
+                break;
+
+            case IDLE:
+                // Если один проснулся — будим второго (если он спал)
+                if (who == CharacterId.JEKYLL
+                        && charles.getCurrentState() == CharacterState.SLEEPING) {
+                    charles.setStateSilent(CharacterState.IDLE);
+                    charles.resetIdleTimers();
+                } else if (who == CharacterId.CHARLES
+                        && jekyll.getCurrentState() == CharacterState.SLEEPING) {
+                    jekyll.setStateSilent(CharacterState.IDLE);
+                    jekyll.resetIdleTimers();
+                }
+                break;
+
+            default:
+                // CURIOUS, DRAGGING, BUG — индивидуальные, не синхронизируем
+                break;
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    //  Реакция на события (ProcessMonitor, BrowserMonitor и т.д.)
+    // ════════════════════════════════════════════════════════════════════════
 
     /**
      * Основной метод реакции на системное событие.
-     * Получает категорию (напр. "browser", "discord"), берёт случайный вариант
-     * из библиотеки и добавляет его в очередь.
      */
     public void react(String category) {
         if (!library.hasCategory(category)) {
@@ -95,30 +137,21 @@ public class PetController {
         }
     }
 
-    /**
-     * Прямое добавление одной реплики — для MealReminder и TimerWidget.
-     */
     public void reactAs(CharacterId who, String text) {
         queue.add(new DialogueLine(who, text));
     }
 
-    /**
-     * Прямая реплика Шарля (совместимость со старым reactToEvent).
-     */
     public void charlesReact(String text) {
         reactAs(CharacterId.CHARLES, text);
     }
 
-    /**
-     * Прямая реплика Джекилла.
-     */
     public void jekyllReact(String text) {
         reactAs(CharacterId.JEKYLL, text);
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
+    // ════════════════════════════════════════════════════════════════════════
     //  Позиционирование
-    // ──────────────────────────────────────────────────────────────────────────
+    // ════════════════════════════════════════════════════════════════════════
 
     private void positionWindows() {
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
@@ -126,38 +159,45 @@ public class PetController {
                 GraphicsEnvironment.getLocalGraphicsEnvironment()
                         .getDefaultScreenDevice().getDefaultConfiguration());
 
-        int bottom = screen.height - insets.bottom;
+        int bottom   = screen.height - insets.bottom;
         int charlesX = screen.width  - charles.getWidth()  - 20;
         int jekyllX  = charlesX      - jekyll.getWidth()   - 10;
 
-        // placeAt запоминает baseY для плавающей анимации
         charles.placeAt(charlesX, bottom - charles.getHeight());
         jekyll.placeAt(jekyllX,   bottom - jekyll.getHeight());
     }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    //  Getters (для MealReminder, ProcessMonitor и прочих)
-    // ──────────────────────────────────────────────────────────────────────────
+    // ════════════════════════════════════════════════════════════════════════
+    //  Getters
+    // ════════════════════════════════════════════════════════════════════════
 
-    public CharlesWindow getCharles() { return charles; }
-    public JekyllWindow getJekyll()  { return jekyll;  }
-    public DialogueQueue getQueue()   { return queue;   }
+    public CharlesWindow  getCharles() { return charles; }
+    public JekyllWindow   getJekyll()  { return jekyll;  }
+    public DialogueQueue  getQueue()   { return queue;   }
 
-    // ──────────────────────────────────────────────────────────────────────────
-    //  Точка входа (если запускать без старого Main)
-    // ──────────────────────────────────────────────────────────────────────────
+    // ════════════════════════════════════════════════════════════════════════
+    //  Cleanup
+    // ════════════════════════════════════════════════════════════════════════
+
+    public void cleanup() {
+        jekyll.cleanup();
+        charles.cleanup();
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    //  Точка входа
+    // ════════════════════════════════════════════════════════════════════════
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            // Замените на реальные SpriteManager'ы для каждого персонажа
             SpriteManager jekyllSprites  = new SpriteManager("jekyll");
-            SpriteManager charlesSprites = new SpriteManager("charles");
+            SpriteManager charlesSprites = new SpriteManager("sprites/charles");
 
             PetController controller = new PetController(jekyllSprites, charlesSprites);
 
             // ProcessMonitor, BrowserMonitor и т.д.:
-            // Было:   amonWindow.reactToEvent(message)
-            // Стало:  controller.react(category)  — или controller.charlesReact(message)
+            //   controller.react("browser")
+            //   controller.charlesReact("Какое-то сообщение")
         });
     }
 }

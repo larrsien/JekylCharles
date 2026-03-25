@@ -26,7 +26,7 @@ public class TrickDialog extends JWindow {
     // реализация глитчей
     private static final char[] GLITCH_CHARS = {'Д', 'А', '!', '#', '@', '?', '█', '▓', '░', '|'};
 
-    private final AmonWindow amonWindow;
+    private final CharlesWindow charlesWindow;
     private BufferedImage backgroundImage;
     private final Runnable onResult;
     private final Random random = new Random();
@@ -43,8 +43,8 @@ public class TrickDialog extends JWindow {
 
     private TrickPanel trickPanel;
 
-    public TrickDialog(AmonWindow amonWindow, Runnable onResult) {
-        this.amonWindow = amonWindow;
+    public TrickDialog(CharlesWindow charlesWindow, Runnable onResult) {
+        this.charlesWindow = charlesWindow;
         this.onResult = onResult;
 
         loadBackgroundImage();
@@ -80,7 +80,7 @@ public class TrickDialog extends JWindow {
         trickPanel = new TrickPanel();
         add(trickPanel);
 
-        Point p = amonWindow.getLocation();
+        Point p = charlesWindow.getLocation();
         setLocation(p.x - OUR_WIDTH + 20, p.y + 130);
     }
 

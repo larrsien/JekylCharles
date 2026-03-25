@@ -2,6 +2,7 @@ package lars.com.browser;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import lars.com.PetController;
 import lars.com.UI.AmonWindow;
 
 import java.io.*;
@@ -9,9 +10,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
-public class AmonSocketServer {
+public class JCSocketServer {
     private static final int PORT = 37842; // Фиксированный порт
-    private final AmonWindow amonWindow;
+    private final PetController petController;
     private final BrowserReactionLibrary reactionLibrary;
     private final Gson gson;
     private ServerSocket serverSocket;
@@ -20,8 +21,8 @@ public class AmonSocketServer {
     private long lastReactionTime = 0;
     private static final long COOLDOWN_MS = 1000;
 
-    public AmonSocketServer(AmonWindow amonWindow) {
-        this.amonWindow = amonWindow;
+    public JCSocketServer(PetController petController) {
+        this.petController = petController;
         this.reactionLibrary = new BrowserReactionLibrary();
         this.gson = new Gson();
         this.running = false;
@@ -61,7 +62,7 @@ public class AmonSocketServer {
                 }
             } catch (IOException e) {
                 System.err.println("Не удалось запустить Socket Server: " + e.getMessage());
-            }}, "AmonSocketServer");
+            }}, "JCSocketServer");
 
         serverThread.setDaemon(true);
         serverThread.start();
@@ -141,7 +142,7 @@ public class AmonSocketServer {
             if (reaction != null) {
                 lastReactionTime = currentTime; // Обновляем время последней реакции
                 System.out.println("Амон говорит: " + reaction);
-                amonWindow.reactToEvent(reaction);
+                petController.react(category);
                 sendResponse(out, "Реакция показана: " + reaction);
             }
 

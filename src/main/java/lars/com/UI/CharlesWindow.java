@@ -4,6 +4,7 @@ import lars.com.dialogue.DialogueQueue;
 import lars.com.graphic.SpriteManager;
 import lars.com.model.CharacterId;
 import lars.com.model.CharacterState;
+import lars.com.model.DialogueLine;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,23 +16,27 @@ public class CharlesWindow extends CharacterWindow {
 
     private static final Preferences prefs = Preferences.userNodeForPackage(CharlesWindow.class);
     private static final String SURPRISE_REVEALED = "surpriseRevealed";
-    private static final String GLITCH_ENABLED = "glitchEnabled";
+    private static final String GLITCH_ENABLED    = "glitchEnabled";
 
-    private ContextMenu contextMenu;
+    // UI-компоненты (принадлежат только Шарлю)
+    private ContextMenu        contextMenu;
     private ConfirmationWindow confirmationWindow;
-    private BirthdayDialog birthdayDialog;
-    private SettingsWindow settingsWindow;
-    private TimerWidget timerWidget;
+    private BirthdayDialog     birthdayDialog;
+    private SettingsWindow     settingsWindow;
+    private TimerWidget        timerWidget;
 
+    // Флаги окон (НЕ переобъявляем isConfirmationOpen / isTrickShowing — они в родителе)
     private boolean isContextMenuOpen = false;
-    private boolean isConfirmationOpen = false;
-    private boolean isBirthdayOpen = false;
-    private boolean isTrickShowing = false;
-    private boolean isSettingsOpen = false;
+    private boolean isBirthdayOpen    = false;
+    private boolean isSettingsOpen    = false;
 
     public CharlesWindow(SpriteManager spriteManager, DialogueQueue dialogueQueue) {
         super(CharacterId.CHARLES, spriteManager, dialogueQueue);
     }
+
+    // ════════════════════════════════════════════════════════════════════════
+    //  Спрайт-панель
+    // ════════════════════════════════════════════════════════════════════════
 
     @Override
     protected JPanel buildSpritePanel() {
@@ -41,14 +46,23 @@ public class CharlesWindow extends CharacterWindow {
                 super.paintComponent(g);
                 BufferedImage sprite = currentSprite();
                 if (sprite != null) {
-                    g.drawImage(sprite, 0, 0, getWidth(), getHeight(), null);
+                    Graphics2D g2d = (Graphics2D) g;
+                    g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                            RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+                    g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
+                            RenderingHints.VALUE_RENDER_QUALITY);
+                    g2d.drawImage(sprite, 0, 0, getWidth(), getHeight(), null);
                 }
             }
         };
         panel.setOpaque(false);
-        panel.setPreferredSize(new Dimension(OUR_WIDTH, OUR_HEIGHT));
+        panel.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
         return panel;
     }
+
+    // ════════════════════════════════════════════════════════════════════════
+    //  Правый клик — контекстное меню
+    // ════════════════════════════════════════════════════════════════════════
 
     @Override
     protected void handleRightClick(MouseEvent e) {
@@ -57,14 +71,8 @@ public class CharlesWindow extends CharacterWindow {
             resetIdleTimers();
         }
 
-        if (isBirthdayOpen) {
-            closeBirthday();
-            return;
-        }
-        if (isSettingsOpen) {
-            closeSettings();
-            return;
-        }
+        if (isBirthdayOpen)   { closeBirthday(); return; }
+        if (isSettingsOpen)   { closeSettings();  return; }
 
         clearBubble();
         dialogueQueue.interrupt();
@@ -81,23 +89,26 @@ public class CharlesWindow extends CharacterWindow {
         contextMenu.setVisible(true);
     }
 
-    @Override
-    protected void onLeftClick() {
-        if (isContextMenuOpen) {
-            closeContextMenu();
-            return;
+    // ════════════════════════════════════════════════════════════════════════
+    //  Меню-действия
+    // ════════════════════════════════════════════════════════════════════════
+
+    private void showBirthdayMenuDialog() {
+        boolean revealed = prefs.getBoolean(SURPRISE_REVEALED, false);
+
+        if (!revealed) {
+            setState(CharacterState.CURIOUS);
+            reactToEvent("О? Неужто Вас заинтересовали эти знаки вопроса?");
         }
-        resetIdleTimers();
+
+        isBirthdayOpen = true;
+        birthdayDialog = new BirthdayDialog(this);
+        birthdayDialog.setVisible(true);
     }
 
-    private void closeContextMenu() {
-        if (contextMenu != null) { contextMenu.dispose(); contextMenu = null; }
-        isContextMenuOpen = false;
-    }
-
-    public void onContextMenuClosed() {
-        contextMenu = null;
-        isContextMenuOpen = false;
+    private void closeBirthday() {
+        if (birthdayDialog != null) { birthdayDialog.dispose(); birthdayDialog = null; }
+        isBirthdayOpen = false;
     }
 
     public void showTimerWidget() {
@@ -110,35 +121,19 @@ public class CharlesWindow extends CharacterWindow {
         timerWidget.setVisible(true);
     }
 
-    public void onTimerWidgetClosed() {
-        timerWidget = null;
+    public void onTimerWidgetClosed() { timerWidget = null; }
+
+    public void onContextMenuClosed() {
+        contextMenu = null;
+        isContextMenuOpen = false;
     }
 
-    private void showBirthdayMenuDialog() {
-        boolean revealed = prefs.getBoolean(SURPRISE_REVEALED, false);
-        if (!revealed) {
-            setState(CharacterState.CURIOUS);
-            dialogueQueue.add(new DialogueLine(CharacterId.CHARLES,
-                    "О? Неужто Вас заинтересовали эти знаки вопроса? " +
-                            "Надо же, какое трогательное любопытство!"));
-            prefs.putBoolean(SURPRISE_REVEALED, true);
-        }
-        isBirthdayOpen = true;
-        birthdayDialog = new BirthdayDialog(this);
-        birthdayDialog.setVisible(true);
-    }
-
-    private void closeBirthday() {
-        if (birthdayDialog != null) { birthdayDialog.dispose(); birthdayDialog = null; }
-        isBirthdayOpen = false;
-    }
+    public void setContextMenuOpen(boolean v) { isContextMenuOpen = v; }
 
     public void showConfirmationDialog() {
-        clearBubble();
-        if (confirmationWindow != null) confirmationWindow.dispose();
         isConfirmationOpen = true;
         confirmationWindow = new ConfirmationWindow(
-                "Желаете со мной попрощаться?",
+                "Вы уверены, что хотите уйти?",
                 this,
                 this::shutDownApplication,
                 () -> { isConfirmationOpen = false; confirmationWindow = null; }
@@ -168,6 +163,18 @@ public class CharlesWindow extends CharacterWindow {
         System.exit(0);
     }
 
+    // ════════════════════════════════════════════════════════════════════════
+    //  Настройки (глитч и т.д.)
+    // ════════════════════════════════════════════════════════════════════════
+
+    public boolean isSurpriseRevealed() {
+        return prefs.getBoolean(SURPRISE_REVEALED, false);
+    }
+
+    public void setSurpriseRevealed(boolean v) {
+        prefs.putBoolean(SURPRISE_REVEALED, v);
+    }
+
     public boolean isGlitchEnabled() {
         return prefs.getBoolean(GLITCH_ENABLED, true);
     }
@@ -176,9 +183,11 @@ public class CharlesWindow extends CharacterWindow {
         prefs.putBoolean(GLITCH_ENABLED, v);
     }
 
+    // ════════════════════════════════════════════════════════════════════════
+    //  Совместимость: reactToEvent → через очередь диалогов
+    // ════════════════════════════════════════════════════════════════════════
 
     public void reactToEvent(String message) {
         dialogueQueue.add(new DialogueLine(CharacterId.CHARLES, message));
     }
-
 }

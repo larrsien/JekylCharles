@@ -28,16 +28,14 @@ public class SettingsWindow extends JWindow {
 
     private static final int CLICKS_TO_REACT = 5;
 
-    private final AmonWindow amonWindow;
+    private final CharlesWindow charlesWindow;
     private BufferedImage backgroundImage;
 
     private Rectangle toggleButtonBounds;
-    private Rectangle mealToggleButtonBounds;
     private Rectangle fakeDisableButtonBounds;
     private Rectangle closeButtonBounds;
 
     private boolean toggleHovered = false;
-    private boolean mealHovered = false;
     private boolean fakeHovered = false;
     private boolean closeHovered = false;
 
@@ -52,8 +50,8 @@ public class SettingsWindow extends JWindow {
     private int fakeClickCount = 0;
     private final Random random = new Random();
 
-    public SettingsWindow(AmonWindow amonWindow) {
-        this.amonWindow = amonWindow;
+    public SettingsWindow(CharlesWindow charlesWindow) {
+        this.charlesWindow = charlesWindow;
         loadBackgroundImage();
         initializeWindow();
     }
@@ -85,14 +83,8 @@ public class SettingsWindow extends JWindow {
         int cipherHeight = calcButtonHeight(cipherLabel);
         toggleButtonBounds = new Rectangle(centerX, startY, BUTTON_WIDTH, cipherHeight);
 
-        // Кнопка переключения напоминаний о еде
-        String mealLabel = buildMealToggleLabel();
-        int mealHeight = calcButtonHeight(mealLabel);
-        mealToggleButtonBounds = new Rectangle(centerX, toggleButtonBounds.y + cipherHeight + BUTTON_GAP,
-                BUTTON_WIDTH, mealHeight);
-
         // Фейковая кнопка отключения реакций
-        fakeDisableButtonBounds = new Rectangle(centerX, mealToggleButtonBounds.y + mealHeight + BUTTON_GAP,
+        fakeDisableButtonBounds = new Rectangle(centerX, BUTTON_GAP,
                 BUTTON_WIDTH, BUTTON_HEIGHT);
 
         // Кнопка закрытия
@@ -109,7 +101,7 @@ public class SettingsWindow extends JWindow {
     }
 
     private void positionDialog() {
-        Point amonLocation = amonWindow.getLocation();
+        Point amonLocation = charlesWindow.getLocation();
 
         int x = amonLocation.x - getWidth() + 20;
         int y = amonLocation.y + 10;
@@ -120,7 +112,7 @@ public class SettingsWindow extends JWindow {
     private void closeWindow() {
         if (glitchTimer != null) glitchTimer.stop();
         dispose();
-        amonWindow.onSettingsWindowClosed();
+        charlesWindow.onSettingsWindowClosed();
     }
 
     private void startGlitchTimer() {
@@ -175,25 +167,19 @@ public class SettingsWindow extends JWindow {
     }
 
     private String buildToggleLabel() {
-        return amonWindow.isGlitchEnabled()
+        return charlesWindow.isGlitchEnabled()
                 ? "Отключить подсказки к шифру"
                 : "Включить подсказки к шифру";
-    }
-
-    private String buildMealToggleLabel() {
-        return amonWindow.isMealReminderEnabled()
-                ? "Отключить напоминания"
-                : "Включить напоминания";
     }
 
     private void triggerAmonReaction() {
         if (glitchTimer != null) glitchTimer.stop();
         dispose();
-        amonWindow.onSettingsWindowClosed();
+        charlesWindow.onSettingsWindowClosed();
 
         // Небольшая задержка, чтобы окно успело закрыться
         Timer delay = new Timer(100, e -> {
-            amonWindow.reactToEvent("Отключить реакции? Ха-ха. Боюсь, это совершенно не в моих " +
+            charlesWindow.reactToEvent("Отключить реакции? Ха-ха. Боюсь, это совершенно не в моих " +
                             "интересах! А значит, и не в Ваших. Скажем так: я оставлю " +
                             "эту кнопку здесь ради эстетики. Пользы от неё — ровно столько, " +
                             "сколько Вы и ожидали.");
@@ -230,7 +216,6 @@ public class SettingsWindow extends JWindow {
                 @Override public void mouseMoved(MouseEvent e) {
                     Point p = e.getPoint();
                     toggleHovered = toggleButtonBounds.contains(p);
-                    mealHovered  = mealToggleButtonBounds.contains(p);
                     fakeHovered  = fakeDisableButtonBounds.contains(p);
                     closeHovered = closeButtonBounds.contains(p);
                     repaint();
@@ -239,7 +224,7 @@ public class SettingsWindow extends JWindow {
 
             addMouseListener(new MouseAdapter() {
                 @Override public void mouseExited(MouseEvent e) {
-                    toggleHovered = mealHovered = fakeHovered = closeHovered = false;
+                    toggleHovered = fakeHovered = closeHovered = false;
                     repaint();
                 }
 
@@ -247,12 +232,7 @@ public class SettingsWindow extends JWindow {
                     Point p = e.getPoint();
 
                     if (toggleButtonBounds.contains(p)) {
-                        amonWindow.setGlitchEnabled(!amonWindow.isGlitchEnabled());
-                        rebuildButtonBounds();
-                        repaint();
-
-                    } else if (mealToggleButtonBounds.contains(p)) {
-                        amonWindow.setMealReminderEnabled(!amonWindow.isMealReminderEnabled());
+                        charlesWindow.setGlitchEnabled(!charlesWindow.isGlitchEnabled());
                         rebuildButtonBounds();
                         repaint();
 
@@ -283,12 +263,7 @@ public class SettingsWindow extends JWindow {
             int cipherH = calcButtonHeight(cipherLabel);
             toggleButtonBounds = new Rectangle(centerX, startY, BUTTON_WIDTH, cipherH);
 
-            String mealLabel = buildMealToggleLabel();
-            int mealH = calcButtonHeight(mealLabel);
-            mealToggleButtonBounds = new Rectangle(centerX, toggleButtonBounds.y + cipherH + BUTTON_GAP,
-                    BUTTON_WIDTH, mealH);
-
-            fakeDisableButtonBounds = new Rectangle(centerX, mealToggleButtonBounds.y + mealH + BUTTON_GAP,
+            fakeDisableButtonBounds = new Rectangle(centerX, toggleButtonBounds.y + BUTTON_GAP,
                     BUTTON_WIDTH, BUTTON_HEIGHT);
 
             closeButtonBounds = new Rectangle(centerX, fakeDisableButtonBounds.y + BUTTON_HEIGHT + BUTTON_GAP,
@@ -308,9 +283,6 @@ public class SettingsWindow extends JWindow {
 
             // Кнопка подсказок к шифру
             drawMultilineButton(g2d, toggleButtonBounds, buildToggleLabel(), toggleHovered, BUTTON_COLOR);
-
-            // Кнопка напоминаний о еде
-            drawMultilineButton(g2d, mealToggleButtonBounds, buildMealToggleLabel(), mealHovered, BUTTON_COLOR);
 
             // Фейковая кнопка с глитчем
             drawGlitchButton(g2d);

@@ -1,11 +1,6 @@
 package lars.com;
 
-import lars.com.UI.AmonWindow;
-import lars.com.browser.AmonSocketServer;
-import lars.com.events.BugCloneEvent;
-import lars.com.events.MealReminder;
 import lars.com.graphic.SpriteManager;
-import lars.com.monitoring.InternalProcessMonitoring;
 
 import javax.swing.*;
 
@@ -22,46 +17,47 @@ public class Main {
             System.out.println("Не удалось установить Look and Feel: " + e.getMessage());
         }
 
-        // Запускаем в EDT (Event Dispatch Thread)
         SwingUtilities.invokeLater(() -> {
             System.out.println("Запуск этого нереального магнум опуса");
 
-            SpriteManager spriteManager = new SpriteManager();
-            AmonWindow amonWindow = new AmonWindow(spriteManager);
-            InternalProcessMonitoring processMonitoring = new InternalProcessMonitoring(amonWindow);
-            MealReminder mealReminder = new MealReminder(amonWindow);
-            BugCloneEvent bugCloneEvent = new BugCloneEvent(amonWindow, spriteManager);
+            // Спрайт-менеджеры для каждого персонажа
+            SpriteManager jekyllSprites  = new SpriteManager("jekyll");
+            SpriteManager charlesSprites = new SpriteManager("sprites/charles");
+
+            // Центральный контроллер
+            PetController controller = new PetController(jekyllSprites, charlesSprites);
+
+            // Мониторинг: теперь использует controller вместо amonWindow
+            // TODO: обновить InternalProcessMonitoring чтобы принимал PetController
+            //       вместо AmonWindow. Вызов будет:
+            //         controller.react("discord")
+            //       вместо:
+            //         amonWindow.reactToEvent("Дискорд? Пусть...")
+
+            // InternalProcessMonitoring processMonitoring = new InternalProcessMonitoring(controller);
+            // MealReminder mealReminder = new MealReminder(controller);
+
+            // BugCloneEvent — спавнит баг-клоны для Шарля (можно позже добавить и для Джекилла)
+            // BugCloneEvent bugCloneEvent = new BugCloneEvent(controller, charlesSprites);
 
             // Socket server для браузерного расширения
-            AmonSocketServer socketServer = new AmonSocketServer(amonWindow);
+            // JCSocketServer socketServer = new JCSocketServer(controller);
+            // socketServer.start();
 
-            // Амон на экране
-            amonWindow.show();
-
-            // мониторинг
-            processMonitoring.start();
-
-            mealReminder.start();
-            bugCloneEvent.start();
-
-            // Запускаем socket server
-            socketServer.start();
-
-            // shutdown hook для корректного завершения
+            // Shutdown hook
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 System.out.println("Завершение работы приложения");
-                processMonitoring.close();
-                mealReminder.stop();
-                amonWindow.cleanup();
-                bugCloneEvent.stop();
-                socketServer.stop();
+                // processMonitoring.close();
+                // mealReminder.stop();
+                controller.cleanup();
+                // bugCloneEvent.stop();
+                // socketServer.stop();
                 System.runFinalization();
-                // небольшая пауза чтобы всё успело закрыться
                 try { Thread.sleep(500); } catch (InterruptedException e) { /* ignore */ }
                 Runtime.getRuntime().halt(0);
             }));
 
-            System.out.println("Амон запущен успешно!");
+            System.out.println("Персонажи запущены успешно!");
         });
     }
 }

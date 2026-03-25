@@ -32,7 +32,7 @@ public class TimerWidget extends JDialog {
 
     private Timer countdownTimer;
     private TimerPanel timerPanel;
-    private final AmonWindow amonWindow;
+    private final CharlesWindow charlesWindow;
 
     private static final double TRICK_CHANCE = 0.1;
     private final Random random = new Random();
@@ -53,9 +53,9 @@ public class TimerWidget extends JDialog {
     private boolean isTrickShowing = false;
 
 
-    public TimerWidget(AmonWindow amonWindow) {
+    public TimerWidget(CharlesWindow charlesWindow) {
         super((Frame) null, false);
-        this.amonWindow = amonWindow;
+        this.charlesWindow = charlesWindow;
         setUndecorated(true);
         initializeWindow();
     }
@@ -75,7 +75,7 @@ public class TimerWidget extends JDialog {
     }
 
     private void positionWidget() {
-        Point p = amonWindow.getLocation();
+        Point p = charlesWindow.getLocation();
         setLocation(p.x - SIZE + 20, p.y - 60);
     }
 
@@ -226,7 +226,7 @@ public class TimerWidget extends JDialog {
                 if (closeBounds.contains(p)) {
                     stopTimer();
                     dispose();
-                    amonWindow.onTimerWidgetClosed();
+                    charlesWindow.onTimerWidgetClosed();
                     return;
                 }
 
@@ -322,10 +322,10 @@ public class TimerWidget extends JDialog {
 
     private void showTrickDialog() {
         isTrickShowing = true;
-        amonWindow.setTrickShowing(true);
-        TrickDialog trick = new TrickDialog(amonWindow, () -> {
+        charlesWindow.setTrickShowing(true);
+        TrickDialog trick = new TrickDialog(charlesWindow, () -> {
             isTrickShowing = false;
-            amonWindow.setTrickShowing(false);
+            charlesWindow.setTrickShowing(false);
             applyTrickOutcome();
         });
         trick.setVisible(true);
@@ -333,7 +333,7 @@ public class TimerWidget extends JDialog {
 
     private void safeReact(String message) {
         if (!isTrickShowing) {
-            amonWindow.reactToEvent(message);
+            charlesWindow.reactToEvent(message);
         }
     }
 
@@ -373,14 +373,14 @@ public class TimerWidget extends JDialog {
                 // прибавить или отнять от перерыва
                 if (random.nextBoolean()) {
                     breakMinutes = Math.min(99, breakMinutes + minutes);
-                    amonWindow.reactToEvent("Сегодня я необычайно щедр: к Вашему времени отдыха прибавилось несколько минут, а именно – " + minutes + ". Потратьте их с умом, полагаю?");
+                    charlesWindow.reactToEvent("Сегодня я необычайно щедр: к Вашему времени отдыха прибавилось несколько минут, а именно – " + minutes + ". Потратьте их с умом, полагаю?");
                 } else {
                     if (breakMinutes - minutes >= 1) {
                         breakMinutes -= minutes;
-                        amonWindow.reactToEvent("Кому-то предстоит отдыхать меньше, чем ему хотелось! Какая досада. Или Вы всё же поменяете время отдыха на то, которое хотели установить раньше? Ха-ха.");
+                        charlesWindow.reactToEvent("Кому-то предстоит отдыхать меньше, чем ему хотелось! Какая досада. Или Вы всё же поменяете время отдыха на то, которое хотели установить раньше? Ха-ха.");
                     } else {
                         breakMinutes = 1;
-                        amonWindow.reactToEvent("Ой, Вы будете отдыхать всего 1 минуту? Как жаль!");
+                        charlesWindow.reactToEvent("Ой, Вы будете отдыхать всего 1 минуту? Как жаль!");
                     }
                 }
                 breakField.setText(String.format("%02d", breakMinutes));
@@ -408,7 +408,7 @@ public class TimerWidget extends JDialog {
         countdownTimer.start();
 
         if (random.nextDouble() >= TRICK_CHANCE) {
-            amonWindow.reactToEvent("Что же, начнём?");
+            charlesWindow.reactToEvent("Что же, начнём?");
         }
         timerPanel.repaint();
     }
@@ -427,11 +427,11 @@ public class TimerWidget extends JDialog {
         if (isFocusPhase) {
             secondsRemaining = focusMinutes * 60;
             playSound();
-            amonWindow.reactToEvent("Перерыв окончен. Снова за работу, полагаю?");
+            charlesWindow.reactToEvent("Перерыв окончен. Снова за работу, полагаю?");
         } else {
             secondsRemaining = breakMinutes * 60;
             playSound();
-            amonWindow.reactToEvent("Время перерыва! Насколько же продуктивно Вы поработали?");
+            charlesWindow.reactToEvent("Время перерыва! Насколько же продуктивно Вы поработали?");
         }
     }
 

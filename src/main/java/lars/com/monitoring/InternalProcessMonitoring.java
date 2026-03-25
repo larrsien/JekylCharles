@@ -1,7 +1,7 @@
 package lars.com.monitoring;
 
-import lars.com.reactions.ResponseLibrary;
-import lars.com.UI.AmonWindow;
+import lars.com.PetController;
+import lars.com.reactions.DualResponseLibrary;
 import oshi.SystemInfo;
 import oshi.software.os.OSProcess;
 import oshi.software.os.OperatingSystem;
@@ -15,9 +15,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class InternalProcessMonitoring {
-    private final AmonWindow amonWindow;
+    private final PetController petController;
     private final OperatingSystem operatingSystem;
-    private final ResponseLibrary responseLibrary;
+    private final DualResponseLibrary dualResponseLibrary;
     private final ScheduledExecutorService scheduler;
     private Set<String> previousProcesses;
     private final SystemInfo systemInfo;
@@ -28,11 +28,11 @@ public class InternalProcessMonitoring {
             "torrent", "amneziavpn", "minecraft", "kaspersky"
     };
 
-    public InternalProcessMonitoring(AmonWindow amonWindow) {
-        this.amonWindow = amonWindow;
+    public InternalProcessMonitoring(PetController petController) {
+        this.petController = petController;
         this.systemInfo = new SystemInfo();
         this.operatingSystem = systemInfo.getOperatingSystem();
-        this.responseLibrary = new ResponseLibrary();
+        this.dualResponseLibrary = new DualResponseLibrary();
         this.scheduler = Executors.newScheduledThreadPool(1);
 
         // Снимаем снимок текущих процессов СРАЗУ, чтобы не реагировать на то, что уже запущено
@@ -89,7 +89,7 @@ public class InternalProcessMonitoring {
 
         String reaction = getProcessReaction(processName);
         if (reaction != null) {
-            SwingUtilities.invokeLater(() -> amonWindow.reactToEvent(reaction));
+            SwingUtilities.invokeLater(() -> petController.react(category));
         }
     }
 

@@ -11,49 +11,65 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
+import java.util.function.BiConsumer;
 
 public abstract class CharacterWindow extends JWindow {
 
-    private static final int OUR_WIDTH=318;
-    private static final int OUR_HEIGHT=350;
+    // ─── Размеры (protected — доступны наследникам) ─────────────────────────
+    protected static final int WINDOW_WIDTH  = 318;
+    protected static final int WINDOW_HEIGHT = 350;
 
     private static final int DRAG_THRESHOLD = 5;
 
-    private final double FLOAT_SPEED = 0.05; // Скорость плавания (меньше = медленнее)
-    private final int FLOAT_AMPLITUDE = 10;
-    private Timer floatingTimer;
-    private double floatingOffset = 0;
-    private int baseY; // Базовая Y позиция
-    private final boolean floatingEnabled = true;
+    // ─── Плавание ───────────────────────────────────────────────────────────
+    private final double FLOAT_SPEED     = 0.05;
+    private final int    FLOAT_AMPLITUDE = 10;
+    private Timer   floatingTimer;
+    private double  floatingOffset = 0;
+    private int     baseY;
 
+    // ─── Идентификация ──────────────────────────────────────────────────────
     public final CharacterId characterId;
 
-    protected final SpriteManager spriteManager;
-    protected final DialogueQueue dialogueQueue;
+    // ─── Спрайты и диалоги ──────────────────────────────────────────────────
+    protected final SpriteManager  spriteManager;
+    protected final DialogueQueue  dialogueQueue;
 
+    // ─── Состояние ──────────────────────────────────────────────────────────
     protected CharacterState currentState = CharacterState.IDLE;
-    protected int currentFrame = 0;
+    protected int            currentFrame = 0;
 
+    // ─── Таймеры idle ───────────────────────────────────────────────────────
     protected Timer idleTimer;
     protected Timer idleToSleepTimer;
 
+    // ─── Перетаскивание ─────────────────────────────────────────────────────
     private Point   pressPoint;
-    private Point dragOffset;
+    private Point   dragOffset;
     private boolean isDragging = false;
 
+    // ─── UI-элементы ────────────────────────────────────────────────────────
     protected ReactionBubble reactionBubble;
-
     protected boolean isConfirmationOpen = false;
     protected boolean isTrickShowing     = false;
+    protected JPanel  spritePanel;
 
-    protected JPanel spritePanel;
+    // ─── Коллбэк синхронизации состояний ────────────────────────────────────
+    //     BiConsumer<CharacterId, CharacterState>: кто + какое новое состояние
+    private BiConsumer<CharacterId, CharacterState> onStateChange;
 
-    public CharacterWindow(CharacterId characterId, SpriteManager spriteManager, DialogueQueue dialogueQueue) {
+    // ════════════════════════════════════════════════════════════════════════
+    //  Конструктор
+    // ════════════════════════════════════════════════════════════════════════
+
+    public CharacterWindow(CharacterId characterId,
+                           SpriteManager spriteManager,
+                           DialogueQueue dialogueQueue) {
         this.characterId   = characterId;
         this.spriteManager = spriteManager;
         this.dialogueQueue = dialogueQueue;
 
-        setSize(OUR_WIDTH, OUR_HEIGHT);
+        setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         setAlwaysOnTop(true);
         setBackground(new Color(0, 0, 0, 0));
 
@@ -65,13 +81,61 @@ public abstract class CharacterWindow extends JWindow {
         setupFloatAnimation();
     }
 
-    protected abstract JPanel buildSpritePanel();
+    // ════════════════════════════════════════════════════════════════════════
+    //  Абстрактные методы
+    // ════════════════════════════════════════════════════════════════════════
 
-    protected abstract void handleRightClick(MouseEvent e);
+    protected abstract JPanel buildSpritePanel();
+    protected abstract void  handleRightClick(MouseEvent e);
+
+    // ════════════════════════════════════════════════════════════════════════
+    //  Синхронизация состояний
+    // ════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Устанавливается PetController-ом после создания обоих окон.
+     * Коллбэк вызывается при КАЖДОМ изменении состояния.
+     */
+    public void setOnStateChange(BiConsumer<CharacterId, CharacterState> callback) {
+        this.onStateChange = callback;
+    }
+
+    /**
+     * Изменить состояние И уведомить PetController (для синхронизации).
+     */
+    public void setState(CharacterState state) {
+        if (currentState == state) return;
+        currentState = state;
+        currentFrame = 0;
+        if (spritePanel != null) spritePanel.repaint();
+
+        // Уведомляем контроллер
+        if (onStateChange != null) {
+            onStateChange.accept(characterId, state);
+        }
+    }
+
+    /**
+     * Изменить состояние БЕЗ уведомления (вызывается контроллером,
+     * чтобы избежать бесконечной рекурсии при синхронизации).
+     */
+    public void setStateSilent(CharacterState state) {
+        if (currentState == state) return;
+        currentState = state;
+        currentFrame = 0;
+        if (spritePanel != null) spritePanel.repaint();
+    }
+
+    public CharacterState getCurrentState() {
+        return currentState;
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    //  Баблы
+    // ════════════════════════════════════════════════════════════════════════
 
     public void showBubble(String text) {
         clearBubble();
-
         reactionBubble = new ReactionBubble(text, this, () -> dialogueQueue.onBubbleDone());
         reactionBubble.setVisible(true);
     }
@@ -83,14 +147,9 @@ public abstract class CharacterWindow extends JWindow {
         }
     }
 
-    public void setState(CharacterState state) {
-        if (currentState == state) return;
-        currentState = state;
-        currentFrame = 0;
-        if (spritePanel != null) spritePanel.repaint();
-    }
-
-    public CharacterState getCurrentState() { return currentState; }
+    // ════════════════════════════════════════════════════════════════════════
+    //  Плавающая анимация
+    // ════════════════════════════════════════════════════════════════════════
 
     private void setupFloatAnimation() {
         floatingTimer = new Timer(16, e -> {
@@ -112,20 +171,44 @@ public abstract class CharacterWindow extends JWindow {
         setLocation(x, y);
     }
 
+    // ════════════════════════════════════════════════════════════════════════
+    //  Idle / Sleep таймеры
+    // ════════════════════════════════════════════════════════════════════════
+
     private void setupIdleTimers() {
-        idleTimer = new Timer(100, e -> {
+        int frameDelay = spriteManager.getFrameDelay(CharacterState.IDLE);
+        idleTimer = new Timer(frameDelay, e -> {
             if (currentState == CharacterState.IDLE || currentState == CharacterState.CURIOUS) {
-                currentFrame = (currentFrame + 1) % spriteManager.getFrameCount(currentState);
+                currentFrame = (currentFrame + 1) % Math.max(1,
+                        spriteManager.getFrameCount(currentState));
                 if (spritePanel != null) spritePanel.repaint();
             }
         });
         idleTimer.start();
+
         idleToSleepTimer = new Timer(5 * 60 * 1000, e -> {
-            if (currentState == CharacterState.IDLE) setState(CharacterState.SLEEPING);
+            if (currentState == CharacterState.IDLE) {
+                setState(CharacterState.SLEEPING);   // уведомит контроллер
+            }
         });
         idleToSleepTimer.setRepeats(false);
         idleToSleepTimer.start();
     }
+
+    public void resetIdleTimers() {
+        if (idleToSleepTimer != null) {
+            idleToSleepTimer.stop();
+            idleToSleepTimer.start();
+        }
+        if (idleTimer != null) {
+            idleTimer.stop();
+            idleTimer.start();
+        }
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    //  Мышь
+    // ════════════════════════════════════════════════════════════════════════
 
     private void setupMouse() {
         MouseAdapter ma = new MouseAdapter() {
@@ -162,7 +245,8 @@ public abstract class CharacterWindow extends JWindow {
                 }
                 if (isDragging) {
                     Point loc = getLocation();
-                    setLocation(loc.x + e.getX() - dragOffset.x, loc.y + e.getY() - dragOffset.y);
+                    setLocation(loc.x + e.getX() - dragOffset.x,
+                            loc.y + e.getY() - dragOffset.y);
                 }
             }
         };
@@ -171,7 +255,6 @@ public abstract class CharacterWindow extends JWindow {
         spritePanel.addMouseMotionListener(mma);
     }
 
-    // левый клик у двоих вызывает реакт
     protected void handleLeftClick(MouseEvent e) {
         if (isConfirmationOpen || isTrickShowing) return;
 
@@ -183,39 +266,26 @@ public abstract class CharacterWindow extends JWindow {
         onLeftClick();
     }
 
+    /** Переопределяется в наследниках для кастомной реакции на ЛКМ. */
     protected void onLeftClick() { }
 
-    protected void resetIdleTimers() {
-        if (idleToSleepTimer != null) {
-            idleToSleepTimer.stop();
-            idleToSleepTimer.start();
-        }
-        if (idleTimer != null) {
-            idleTimer.stop();
-            idleTimer.start();
-        }
-    }
+    // ════════════════════════════════════════════════════════════════════════
+    //  Утилиты
+    // ════════════════════════════════════════════════════════════════════════
 
-    public boolean isTrickShowing() {
-        return isTrickShowing;
-    }
-    public void setTrickShowing(boolean v) {
-        isTrickShowing = v;
-    }
-    public boolean isConfirmationOpen() {
-        return isConfirmationOpen;
-    }
-
-    public void cleanup() {
-        if (floatingTimer != null) floatingTimer.stop();
-        if (idleTimer != null) idleTimer.stop();
-        if (idleToSleepTimer != null) idleToSleepTimer.stop();
-        clearBubble();
-        dispose();
-    }
+    public boolean isTrickShowing()        { return isTrickShowing; }
+    public void    setTrickShowing(boolean v) { isTrickShowing = v; }
+    public boolean isConfirmationOpen()    { return isConfirmationOpen; }
 
     protected BufferedImage currentSprite() {
         return spriteManager.getFrame(currentState, currentFrame);
     }
 
+    public void cleanup() {
+        if (floatingTimer != null)     floatingTimer.stop();
+        if (idleTimer != null)         idleTimer.stop();
+        if (idleToSleepTimer != null)  idleToSleepTimer.stop();
+        clearBubble();
+        dispose();
+    }
 }
