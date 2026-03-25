@@ -1,7 +1,6 @@
 package lars.com.monitoring;
 
 import lars.com.PetController;
-import lars.com.reactions.DualResponseLibrary;
 import oshi.SystemInfo;
 import oshi.software.os.OSProcess;
 import oshi.software.os.OperatingSystem;
@@ -20,20 +19,21 @@ public class InternalProcessMonitoring {
     private final OperatingSystem operatingSystem;
     private final ScheduledExecutorService scheduler;
     private Set<String> previousProcesses;
+    private final Set<String> alreadyReacted = new HashSet<>();
 
     private static final String[] KEYWORDS = {
-            "discord", "telegram", "clipstudio", "sai2", "steam",
-            "chrome", "opera", "bloodborne", "shadps4", "peak",
-            "warframe", "roblox", "phasmophobia", "nightreign",
-            "blender", "bandicam", "obs64", "torrent", "amneziavpn",
-            "minecraft", "kaspersky"
+            "microsoftedge", "deadbydaylight", "repo",
+            "minecraft", "discord", "telegram", "steam",
+            "word", "paint", "hades", "peak",
+            "warframe", "kebabchief", "liarsbar", "nightreign",
+            "enigmatrials", "wherewindsmeet"
     };
 
     public InternalProcessMonitoring(PetController petController) {
-        this.petController   = petController;
+        this.petController = petController;
         SystemInfo systemInfo = new SystemInfo();
         this.operatingSystem = systemInfo.getOperatingSystem();
-        this.scheduler       = Executors.newScheduledThreadPool(1);
+        this.scheduler = Executors.newScheduledThreadPool(1);
 
         // Снимок текущих процессов, чтобы не реагировать на уже запущенное
         this.previousProcesses = new HashSet<>();
@@ -85,17 +85,18 @@ public class InternalProcessMonitoring {
     }
 
     private void notifyNewProcess(String processName) {
-        System.out.println("Обнаружен новый процесс: " + processName);
-
         String category = mapProcessToCategory(processName);
-        if (category != null) {
-            SwingUtilities.invokeLater(() -> petController.react(category));
-        }
+
+        // Уже реагировали на эту категорию — пропускаем
+        if (alreadyReacted.contains(category)) return;
+        alreadyReacted.add(category);
+
+        System.out.println("Обнаружен новый процесс: " + processName + " → " + category);
+        SwingUtilities.invokeLater(() -> petController.react(category));
     }
 
     private void notifyProcessClosed(String processName) {
         System.out.println("Процесс закрыт: " + processName);
-        // Можно добавить категории типа "discord_closed" если нужно
     }
 
     private boolean isCompatible(String processName) {
@@ -107,36 +108,26 @@ public class InternalProcessMonitoring {
         return false;
     }
 
-    /**
-     * Маппит имя процесса на категорию из DualResponseLibrary.
-     * Возвращает null, если категория не определена.
-     */
     private String mapProcessToCategory(String processName) {
         String lower = processName.toLowerCase();
 
-        if (lower.contains("telegram"))      return "telegram";
-        if (lower.contains("discord"))       return "discord";
-        if (lower.contains("steam"))         return "steam";
-        if (lower.contains("chrome")
-                || lower.contains("opera"))         return "browser";
-        if (lower.contains("clipstudio")
-                || lower.contains("sai2"))          return "drawing";
-        if (lower.contains("blender"))       return "blender";
-        if (lower.contains("obs64")
-                || lower.contains("bandicam"))      return "recording";
-        if (lower.contains("torrent"))       return "torrent";
-        if (lower.contains("amneziavpn"))    return "vpn";
-        if (lower.contains("kaspersky"))     return "antivirus";
-        if (lower.contains("minecraft"))     return "minecraft";
-
-        // Игры
-        if (lower.contains("bloodborne")
-                || lower.contains("shadps4")
-                || lower.contains("warframe")
-                || lower.contains("roblox")
-                || lower.contains("phasmophobia")
-                || lower.contains("nightreign")
-                || lower.contains("peak"))          return "gaming";
+        if (lower.contains("telegram")) return "telegram";
+        if (lower.contains("discord")) return "discord";
+        if (lower.contains("steam")) return "steam";
+        if (lower.contains("microsoftedge")) return "browser";
+        if (lower.contains("paint")) return "painting";
+        if (lower.contains("minecraft")) return "minecraft";
+        if (lower.contains("deadbydaylight")) return "deadbydaylight";
+        if (lower.contains("repo")) return "repo";
+        if (lower.contains("word")) return "word";
+        if (lower.contains("hades")) return "hades";
+        if (lower.contains("peak")) return "peak";
+        if (lower.contains("warframe"))return "warframe";
+        if (lower.contains("kebabchief"))return "kebabchief";
+        if (lower.contains("liarsbar"))return "liarsbar";
+        if (lower.contains("nightreign"))return "nightreign";
+        if (lower.contains("enigmatrials"))return "enigmatrials";
+        if (lower.contains("wherewindsmeet"))return "wherewindsmeet";
 
         return "default";
     }

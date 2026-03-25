@@ -17,8 +17,8 @@ public class SpriteManager {
 
     private static final String SPRITE_BASE = "sprites/";
 
-    private final String characterName;   // "jekyll" или "charles"
-    private final String filePrefix;      // "{characterName}_"
+    private final String characterName;
+    private final String filePrefix;
 
     private final Map<CharacterState, List<BufferedImage>> spriteCache = new HashMap<>();
     private final Map<CharacterState, Integer> frameDelays = new HashMap<>();

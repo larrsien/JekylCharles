@@ -32,32 +32,7 @@ public class ReactionBubble extends JWindow {
     private static final int AUTO_ADVANCE_DELAY = 1000;
     private static final int FINAL_PAGE_DELAY = 3000;
 
-    // ─── Глитч-константы ────────────────────────────────────────────────────
-    private static final char[] GLITCH_CHARS =
-            {'▓','░','▒','│','┤','║','╗','╝','┐','└','┘','┌','═','╬','◆','▪','╫','╪','▀','▄'};
-    private static final int GLITCH_NOISE_FRAMES = 10;
-    private static final int GLITCH_SPEED = 90;
-    private static final Color COLOR_NOISE    = new Color(200,210,225, 115);
-    private static final Color COLOR_SETTLING = new Color(210,220,235, 204);
-    private static final Color COLOR_FINAL    = new Color(230,238,248, 255);
-
-    private static final int FLICKER_PERIOD_MS = 260;
-    private static final int FLICKER_DURATION  = 1800;
-
-    private static final String GLITCH_FONT_NAME = "Courier New";
-
-    // ─── Глитч-состояние ────────────────────────────────────────────────────
-    private String glitchFragment   = null;
-    private String glitchDisplay    = "";
-    private Timer glitchTimer;
-    private Timer flickerTimer;
-    private int glitchPhase = 0;
-    private int glitchFrameCount = 0;
-    private boolean flickerVisible = true;
-    private final Random glitchRandom = new Random();
-
-    // ═══ КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: CharacterWindow вместо AmonWindow ═══
-    private final CharacterWindow parentWindow;
+    private final CharacterWindow characterWindow;
     private final Runnable onDone;
 
     private BufferedImage backgroundImage;
@@ -75,35 +50,16 @@ public class ReactionBubble extends JWindow {
 
     private boolean isTyping = false;
 
-    // ════════════════════════════════════════════════════════════════════════
-    //  Конструкторы
-    // ════════════════════════════════════════════════════════════════════════
-
-    /**
-     * Новый конструктор для CharacterWindow + DialogueQueue.
-     */
-    public ReactionBubble(String reaction, CharacterWindow parentWindow, Runnable onDone) {
-        this.parentWindow = parentWindow;
-        this.onDone       = onDone;
-        this.reaction     = parseGlitchMarker(reaction);
+    public ReactionBubble(String reaction, CharacterWindow characterWindow, Runnable onDone) {
+        this.characterWindow = characterWindow;
+        this.onDone = onDone;
+        this.reaction = parseGlitchMarker(reaction);
 
         loadBackgroundImage();
         initializeWindow();
         splitTextIntoPages();
         startTyping();
         scheduleAutoClose();
-    }
-
-    // ════════════════════════════════════════════════════════════════════════
-    //  Глитч-маркеры
-    // ════════════════════════════════════════════════════════════════════════
-
-    private boolean isGlitchEnabled() {
-        // Глитч поддерживается только для Шарля
-        if (parentWindow instanceof CharlesWindow) {
-            return ((CharlesWindow) parentWindow).isGlitchEnabled();
-        }
-        return false;
     }
 
     private String parseGlitchMarker(String raw) {
@@ -142,7 +98,7 @@ public class ReactionBubble extends JWindow {
     }
 
     private void positionReaction() {
-        Point loc = parentWindow.getLocation();
+        Point loc = characterWindow.getLocation();
         int x = loc.x - getWidth() + 20;
         int y = loc.y + 130;
         setLocation(x, y);
@@ -161,8 +117,8 @@ public class ReactionBubble extends JWindow {
 
     private void loadBackgroundImage() {
         try {
-            InputStream inputStream = getClass().getClassLoader()
-                    .getResourceAsStream("frames/reaction.png");
+            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("frames/reaction.png");
+
             if (inputStream != null) {
                 backgroundImage = ImageIO.read(inputStream);
             } else {
@@ -176,10 +132,6 @@ public class ReactionBubble extends JWindow {
         }
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    //  Пагинация текста
-    // ════════════════════════════════════════════════════════════════════════
-
     private void splitTextIntoPages() {
         textPages = new ArrayList<>();
 
@@ -192,7 +144,7 @@ public class ReactionBubble extends JWindow {
         int availableWidth  = OUR_WIDTH  - TEXT_PADDING_LEFT - TEXT_PADDING_RIGHT;
         int availableHeight = OUR_HEIGHT - TEXT_PADDING_TOP  - TEXT_PADDING_BOTTOM;
         int lineHeight = fm.getHeight();
-        int maxLines   = Math.max(1, availableHeight / lineHeight);
+        int maxLines = Math.max(1, availableHeight / lineHeight);
 
         String[] words = reaction.split(" ");
         StringBuilder currentLine = new StringBuilder();
@@ -224,10 +176,6 @@ public class ReactionBubble extends JWindow {
             textPages.add("");
         }
     }
-
-    // ════════════════════════════════════════════════════════════════════════
-    //  Печать текста
-    // ════════════════════════════════════════════════════════════════════════
 
     private void startTyping() {
         String pageText = textPages.get(currentPage);
@@ -270,89 +218,6 @@ public class ReactionBubble extends JWindow {
         }
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    //  Глитч-анимация
-    // ════════════════════════════════════════════════════════════════════════
-
-    private void startGlitchAnimation() {
-        glitchPhase      = 1;
-        glitchFrameCount = 0;
-        glitchDisplay    = buildNoise(glitchFragment.length());
-        reactionPanel.repaint();
-
-        glitchTimer = new Timer(GLITCH_SPEED, e -> tickGlitch());
-        glitchTimer.start();
-    }
-
-    private void tickGlitch() {
-        glitchFrameCount++;
-
-        if (glitchPhase == 1) {
-            glitchDisplay = buildNoise(glitchFragment.length());
-            if (glitchFrameCount >= GLITCH_NOISE_FRAMES) {
-                glitchPhase      = 2;
-                glitchFrameCount = 0;
-            }
-        } else if (glitchPhase == 2) {
-            int revealed = glitchFrameCount + 1;
-            if (revealed >= glitchFragment.length()) {
-                glitchDisplay = glitchFragment;
-                glitchPhase   = 3;
-                glitchTimer.stop();
-                startFlickerPhase();
-                return;
-            }
-            StringBuilder sb = new StringBuilder();
-            sb.append(glitchFragment, 0, revealed);
-            for (int i = revealed; i < glitchFragment.length(); i++) {
-                char c = glitchFragment.charAt(i);
-                sb.append((c == ' ' || c == '◈')
-                        ? c
-                        : GLITCH_CHARS[glitchRandom.nextInt(GLITCH_CHARS.length)]);
-            }
-            glitchDisplay = sb.toString();
-        }
-        reactionPanel.repaint();
-    }
-
-    private void startFlickerPhase() {
-        flickerVisible = true;
-        flickerTimer = new Timer(FLICKER_PERIOD_MS, e -> {
-            flickerVisible = !flickerVisible;
-            reactionPanel.repaint();
-        });
-        flickerTimer.start();
-
-        Timer stopFlicker = new Timer(FLICKER_DURATION, e -> {
-            flickerTimer.stop();
-            flickerVisible = true;
-            glitchPhase = 4;
-            reactionPanel.repaint();
-
-            if (closeTimer != null) closeTimer.stop();
-            closeTimer = new Timer(7000, ev -> cleanup());
-            closeTimer.setRepeats(false);
-            closeTimer.start();
-        });
-        stopFlicker.setRepeats(false);
-        stopFlicker.start();
-    }
-
-    private String buildNoise(int length) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("◈ ");
-        int inner = Math.max(0, length - 4);
-        for (int i = 0; i < inner; i++) {
-            sb.append(GLITCH_CHARS[glitchRandom.nextInt(GLITCH_CHARS.length)]);
-        }
-        sb.append(" ◈");
-        return sb.toString();
-    }
-
-    // ════════════════════════════════════════════════════════════════════════
-    //  Таймеры
-    // ════════════════════════════════════════════════════════════════════════
-
     private void scheduleAutoAdvance() {
         autoAdvanceTimer = new Timer(AUTO_ADVANCE_DELAY, e -> nextPage());
         autoAdvanceTimer.setRepeats(false);
@@ -379,39 +244,24 @@ public class ReactionBubble extends JWindow {
         int typingTime = reaction.length() * TYPING_SPEED;
         int pageTransitionTime = (textPages != null && textPages.size() > 1)
                 ? (textPages.size() - 1) * AUTO_ADVANCE_DELAY : 0;
-        int glitchTime = (glitchFragment != null)
-                ? (GLITCH_NOISE_FRAMES + glitchFragment.length()) * GLITCH_SPEED + FLICKER_DURATION + 500
-                : 0;
-        int finalDelay = (glitchFragment != null) ? 4000 : FINAL_PAGE_DELAY;
 
-        return typingTime + pageTransitionTime + glitchTime + finalDelay;
+        return typingTime + pageTransitionTime + FINAL_PAGE_DELAY;
     }
 
     public int getTotalDisplayTime() {
         return calculateTotalDisplayTime();
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    //  Cleanup
-    // ════════════════════════════════════════════════════════════════════════
-
     public void cleanup() {
         if (typingTimer != null)      typingTimer.stop();
         if (autoAdvanceTimer != null)  autoAdvanceTimer.stop();
         if (closeTimer != null)        closeTimer.stop();
-        if (glitchTimer != null)       glitchTimer.stop();
-        if (flickerTimer != null)      flickerTimer.stop();
         dispose();
 
-        // Уведомляем DialogueQueue
         if (onDone != null) {
             onDone.run();
         }
     }
-
-    // ════════════════════════════════════════════════════════════════════════
-    //  Отрисовка
-    // ════════════════════════════════════════════════════════════════════════
 
     private void drawStringWithBorder(Graphics2D g2d, String text, int x, int y, Color color) {
         g2d.setColor(new Color(0, 0, 0, 150));
@@ -436,7 +286,7 @@ public class ReactionBubble extends JWindow {
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             Graphics2D g2d = (Graphics2D) g;
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,      RenderingHints.VALUE_ANTIALIAS_ON);
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
             if (backgroundImage != null) {
@@ -445,11 +295,6 @@ public class ReactionBubble extends JWindow {
 
             if (currentDisplayText != null && !currentDisplayText.isEmpty()) {
                 drawText(g2d);
-            }
-
-            // Глитч-фрагмент
-            if (glitchPhase > 0 && glitchDisplay != null && !glitchDisplay.isEmpty()) {
-                drawGlitch(g2d);
             }
         }
 
@@ -465,25 +310,6 @@ public class ReactionBubble extends JWindow {
                 drawStringWithBorder(g2d, line, TEXT_PADDING_LEFT, y, TEXT_COLOR);
                 y += fm.getHeight();
             }
-        }
-
-        private void drawGlitch(Graphics2D g2d) {
-            if (glitchPhase == 3 && !flickerVisible) return;
-
-            Font font = new Font(GLITCH_FONT_NAME, Font.BOLD, FONT_SIZE - 1);
-            g2d.setFont(font);
-            FontMetrics fm = g2d.getFontMetrics(font);
-
-            int x = (OUR_WIDTH - fm.stringWidth(glitchDisplay)) / 2;
-            int y = OUR_HEIGHT - TEXT_PADDING_BOTTOM + 5;
-
-            Color color;
-            switch (glitchPhase) {
-                case 1: color = COLOR_NOISE;    break;
-                case 2: color = COLOR_SETTLING; break;
-                default: color = COLOR_FINAL;   break;
-            }
-            drawStringWithBorder(g2d, glitchDisplay, x, y, color);
         }
     }
 }

@@ -7,49 +7,9 @@ import java.util.*;
 
 public class DualResponseLibrary {
 
-    /**
-     * Библиотека реплик для Джекилла и Шарля.
-     *
-     *  1. Монолог одного персонажа (soliloquy):
-     *     Одна реплика от конкретного CharacterId.
-     *     Добавляется через addMono(category, CharacterId, "текст", ...).
-     *
-     *  2. Диалог (dialogue):
-     *     Цепочка реплик от обоих персонажей поочерёдно.
-     *     Добавляется через addDialogue(category, DialogueLine...).
-     *
-     *  3. Смешанный пул:
-     *     В категории могут быть и монологи, и диалоги.
-     *     getResponse(category) случайно вернёт один из вариантов.
-     *
-     * ── Использование: ─────────────────────────────────────────────────────────
-     *
-     *   DualResponseLibrary lib = new DualResponseLibrary();
-     *
-     *   // Один персонаж:
-     *   lib.addMono("browser", CharacterId.CHARLES,
-     *       "Что будете искать сегодня?",
-     *       "Браузер? Снова?");
-     *
-     *   // Диалог двух:
-     *   lib.addDialogue("browser",
-     *       new DialogueLine(CharacterId.JEKYLL,  "Интернет..."),
-     *       new DialogueLine(CharacterId.CHARLES, "Тихо, я думаю."),
-     *       new DialogueLine(CharacterId.JEKYLL,  "Ты всегда думаешь."));
-     *
-     *   // Получить случайный вариант (монолог или диалог):
-     *   List<DialogueLine> lines = lib.getResponse("browser");
-     *   dialogueQueue.addAll(lines);
-     *
-     * ──────────────────────────────────────────────────────────────────────────
-     */
-
     private final Map<String, List<List<DialogueLine>>> pool = new HashMap<>();
     private final Random random = new Random();
-    /**
-     * Добавить один или несколько монологов одного персонажа в категорию.
-     * Каждая строка — отдельный вариант (не цепочка).
-     */
+
     public void addMono(String category, CharacterId who, String... texts) {
         List<List<DialogueLine>> variants = pool.computeIfAbsent(category, k -> new ArrayList<>());
         for (String text : texts) {
@@ -57,26 +17,16 @@ public class DualResponseLibrary {
         }
     }
 
-    /**
-     * Добавить один диалог (цепочку реплик) как один вариант в категорию.
-     * Вызывать этот метод несколько раз, чтобы добавить несколько разных диалогов.
-     */
     public void addDialogue(String category, DialogueLine... lines) {
         List<List<DialogueLine>> variants = pool.computeIfAbsent(category, k -> new ArrayList<>());
         variants.add(Arrays.asList(lines));
     }
 
-    /** Удобный вариант с List. */
     public void addDialogue(String category, List<DialogueLine> lines) {
         List<List<DialogueLine>> variants = pool.computeIfAbsent(category, k -> new ArrayList<>());
         variants.add(new ArrayList<>(lines));
     }
 
-    /**
-     * Вернуть случайный вариант из категории.
-     * Если категория не найдена — берёт из "default".
-     * Если и "default" нет — возвращает пустой список.
-     */
     public List<DialogueLine> getResponse(String category) {
         List<List<DialogueLine>> variants = pool.get(category);
         if (variants == null || variants.isEmpty()) {
@@ -88,17 +38,11 @@ public class DualResponseLibrary {
         return variants.get(random.nextInt(variants.size()));
     }
 
-    /**
-     * Есть ли хоть один вариант для данной категории?
-     */
     public boolean hasCategory(String category) {
         List<List<DialogueLine>> variants = pool.get(category);
         return variants != null && !variants.isEmpty();
     }
 
-    /**
-     * Все зарегистрированные категории.
-     */
     public Set<String> categories() {
         return Collections.unmodifiableSet(pool.keySet());
     }
@@ -180,8 +124,6 @@ public class DualResponseLibrary {
                 new DialogueLine(CharacterId.JEKYLL,  "Ничего. Просто тихо."),
                 new DialogueLine(CharacterId.CHARLES, "Тишина — это роскошь. Наслаждайтесь."));
 
-        // ── правый клик по Джекиллу (используется JekyllWindow напрямую) ────
-        // Эти фразы передаются в конструктор JekyllWindow как отдельный список.
 
         return lib;
     }

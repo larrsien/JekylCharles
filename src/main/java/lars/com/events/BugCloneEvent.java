@@ -13,6 +13,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+// баг будет только у шарля
+
 public class BugCloneEvent {
 
     private final CharlesWindow charlesWindow;
@@ -23,18 +25,18 @@ public class BugCloneEvent {
     private int lastDayOfYear = -1;
     private int bugsShownToday = 0;
 
-    private static final int BUGS_PER_DAY        = 2;
-    private static final int MIN_SAFE_DISTANCE    = 250;
-    private static final int MIN_DELAY_MINUTES    = 30;
-    private static final int MAX_DELAY_MINUTES    = 180;
+    private static final int BUGS_PER_DAY = 2;
+    private static final int MIN_SAFE_DISTANCE = 250;
+    private static final int MIN_DELAY_MINUTES = 30;
+    private static final int MAX_DELAY_MINUTES = 180;
 
     private ScheduledFuture<?> nextBugTask;
 
     public BugCloneEvent(CharlesWindow charlesWindow, SpriteManager spriteManager) {
         this.charlesWindow = charlesWindow;
         this.spriteManager = spriteManager;
-        this.scheduler     = Executors.newScheduledThreadPool(1);
-        this.random        = new Random();
+        this.scheduler = Executors.newScheduledThreadPool(1);
+        this.random = new Random();
     }
 
     public void start() {
@@ -77,7 +79,7 @@ public class BugCloneEvent {
         int screenWidth  = screenBounds.width;
         int screenHeight = screenBounds.height;
 
-        // Берём позицию Шарля как опорную
+        // Берём позицию Шарля
         Point charlesLocation = charlesWindow.getLocation();
         int amonWidth  = 217;
         int amonHeight = 371;

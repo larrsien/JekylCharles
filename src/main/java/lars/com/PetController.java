@@ -183,21 +183,4 @@ public class PetController {
         jekyll.cleanup();
         charles.cleanup();
     }
-
-    // ════════════════════════════════════════════════════════════════════════
-    //  Точка входа
-    // ════════════════════════════════════════════════════════════════════════
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            SpriteManager jekyllSprites  = new SpriteManager("jekyll");
-            SpriteManager charlesSprites = new SpriteManager("charles");
-
-            PetController controller = new PetController(jekyllSprites, charlesSprites);
-
-            // ProcessMonitor, BrowserMonitor и т.д.:
-            //   controller.react("browser")
-            //   controller.charlesReact("Какое-то сообщение")
-        });
-    }
 }

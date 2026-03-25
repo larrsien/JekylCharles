@@ -28,10 +28,7 @@ public class JCSocketServer {
     }
 
     public void start() {
-        if (running) {
-            System.out.println("Socket server уже запущен");
-            return;
-        }
+        if (running) return;
 
         serverThread = new Thread(() -> {
             try {
@@ -44,16 +41,11 @@ public class JCSocketServer {
                 while (running) {
                     try {
                         Socket clientSocket = serverSocket.accept();
-                        System.out.println("Браузерное расширение подключилось");
-
-                        Thread clientThread = new Thread(() -> handleClient(clientSocket));
-                        clientThread.setDaemon(true);
-                        clientThread.start();
-
+                        Thread t = new Thread(() -> handleClient(clientSocket));
+                        t.setDaemon(true);
+                        t.start();
                     } catch (IOException e) {
-                        if (running) {
-                            System.err.println("Ошибка при приеме подключения: " + e.getMessage());
-                        }
+                        if (running) System.err.println("Ошибка подключения: " + e.getMessage());
                     }
                 }
             } catch (IOException e) {
@@ -72,19 +64,12 @@ public class JCSocketServer {
                      new OutputStreamWriter(clientSocket.getOutputStream(), StandardCharsets.UTF_8), true)) {
 
             String line;
-            while ((line = in.readLine()) != null) {
-                handleMessage(line, out);
-            }
+            while ((line = in.readLine()) != null) handleMessage(line, out);
 
         } catch (IOException e) {
-            System.err.println("Ошибка при работе с клиентом: " + e.getMessage());
+            System.err.println("Ошибка клиента: " + e.getMessage());
         } finally {
-            try {
-                clientSocket.close();
-                System.out.println("Браузерное расширение отключилось");
-            } catch (IOException e) {
-                // ignore
-            }
+            try { clientSocket.close(); } catch (IOException ignored) {}
         }
     }
 
@@ -93,84 +78,51 @@ public class JCSocketServer {
             JsonObject message = gson.fromJson(messageJson, JsonObject.class);
             String type = message.get("type").getAsString();
 
-            System.out.println("Получено от расширения: " + type);
-
             if (type.equals("EXTENSION_CONNECTED")) {
-                System.out.println("Расширение подключено!");
                 sendResponse(out, "Приветствуем!");
                 return;
             }
 
-            // Cooldown
-            long currentTime = System.currentTimeMillis();
-            if (currentTime - lastReactionTime < COOLDOWN_MS) {
-                System.out.println("Cooldown активен, событие пропущено");
-                return;
+            long now = System.currentTimeMillis();
+            if (now - lastReactionTime < COOLDOWN_MS) return;
+
+            String category = null;
+
+            if (type.equals("TAB_ACTIVATED")) {
+                // Сначала поисковый запрос
+                if (message.has("searchQuery") && !message.get("searchQuery").isJsonNull()) {
+                    category = reactionLibrary.getCategoryBySearchQuery(
+                            message.get("searchQuery").getAsString());
+                }
+                // Потом категория сайта
+                if (category == null && message.has("category")) {
+                    category = reactionLibrary.getCategoryBySite(
+                            message.get("category").getAsString());
+                }
             }
 
-            String reaction = null;
-
-            switch (type) {
-                case "TAB_ACTIVATED":
-                    // Сначала проверяем поисковый запрос (более специфично)
-                    if (message.has("searchQuery") && !message.get("searchQuery").isJsonNull()) {
-                        String searchQuery = message.get("searchQuery").getAsString();
-                        reaction = reactionLibrary.getReactionBySearchQuery(searchQuery);
-                    }
-
-                    // Если по запросу ничего не нашли — смотрим на категорию сайта
-                    if (reaction == null && message.has("category")) {
-                        String category = message.get("category").getAsString();
-                        reaction = reactionLibrary.getReaction(category);
-                    }
-                    break;
-
-                case "TAB_CREATED":
-                case "TAB_CLOSED":
-                    reaction = reactionLibrary.getReaction(type);
-                    break;
-
-                default:
-                    System.out.println("Неизвестный тип события: " + type);
-                    break;
-            }
-
-            if (reaction != null) {
-                lastReactionTime = currentTime;
-                System.out.println("Реакция: " + reaction);
-                // BrowserReactionLibrary возвращает готовый текст → шлём как реплику Шарля
-                petController.charlesReact(reaction);
-                sendResponse(out, "Реакция показана");
+            if (category != null && !category.equals("unknown")) {
+                lastReactionTime = now;
+                petController.react(category);
+                sendResponse(out, "Реакция на: " + category);
             }
 
         } catch (Exception e) {
-            System.err.println("Ошибка обработки сообщения: " + e.getMessage());
+            System.err.println("Ошибка обработки: " + e.getMessage());
         }
     }
 
-    private void sendResponse(PrintWriter out, String message) {
-        JsonObject response = new JsonObject();
-        response.addProperty("status", "ok");
-        response.addProperty("message", message);
-        response.addProperty("timestamp", System.currentTimeMillis());
-        out.println(gson.toJson(response));
+    private void sendResponse(PrintWriter out, String msg) {
+        JsonObject r = new JsonObject();
+        r.addProperty("status", "ok");
+        r.addProperty("message", msg);
+        r.addProperty("timestamp", System.currentTimeMillis());
+        out.println(gson.toJson(r));
     }
 
     public void stop() {
         running = false;
-
-        if (serverSocket != null && !serverSocket.isClosed()) {
-            try {
-                serverSocket.close();
-            } catch (IOException e) {
-                System.err.println("Ошибка при закрытии сервера: " + e.getMessage());
-            }
-        }
-
-        if (serverThread != null) {
-            serverThread.interrupt();
-        }
-
-        System.out.println("Socket Server остановлен");
+        try { if (serverSocket != null) serverSocket.close(); } catch (IOException ignored) {}
+        if (serverThread != null) serverThread.interrupt();
     }
 }

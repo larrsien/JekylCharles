@@ -1,11 +1,11 @@
 package lars.com.model;
 
 public enum CharacterState {
-    IDLE("sprites/charles/idle"), // 3 штуки
-    CURIOUS("curious"), // 5 штук
-    DRAGGING("dragging"), // 1 штука
-    SLEEPING("sleeping"), // 1 штука
-    BUG("bug"); // 3 штуки
+    IDLE("idle"),
+    CURIOUS("curious"),
+    DRAGGING("dragging"),
+    SLEEPING("sleeping"),
+    BUG("bug");
 
     private final String stateName;
 

@@ -49,13 +49,15 @@ public class JekyllWindow extends CharacterWindow {
     protected void handleRightClick(MouseEvent e) {
         if (isTrickShowing || isConfirmationOpen) return;
 
-        // Пробуждаем, если спал
         if (currentState == CharacterState.SLEEPING) {
             setState(CharacterState.IDLE);
             resetIdleTimers();
         }
 
         if (rightClickPhrases == null || rightClickPhrases.isEmpty()) return;
+
+        // Не добавляем новую реплику, пока текущая не закончилась
+        if (dialogueQueue.isActive()) return;
 
         String text = rightClickPhrases.get(random.nextInt(rightClickPhrases.size()));
         dialogueQueue.add(new DialogueLine(CharacterId.JEKYLL, text));

@@ -137,11 +137,11 @@ public class ContextMenu extends JWindow {
     private void loadBackgroundImage() {
         try {
             InputStream is = getClass().getClassLoader()
-                    .getResourceAsStream("UI/context_menu_bg.png");
+                    .getResourceAsStream("frames/reaction.png");
             if (is != null) {
                 backgroundImage = ImageIO.read(is);
             } else {
-                File file = new File("src/main/resources/UI/context_menu_bg.png");
+                File file = new File("src/main/resources/frames/reaction.png");
                 if (file.exists()) {
                     backgroundImage = ImageIO.read(file);
                 }

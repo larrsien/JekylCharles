@@ -11,48 +11,43 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.image.BufferedImage;
+import java.util.Random;
 import java.util.function.BiConsumer;
 
 public abstract class CharacterWindow extends JWindow {
 
-    // ─── Размеры (protected — доступны наследникам) ─────────────────────────
     protected static final int WINDOW_WIDTH  = 318;
     protected static final int WINDOW_HEIGHT = 350;
 
     private static final int DRAG_THRESHOLD = 5;
 
-    // ─── Плавание ───────────────────────────────────────────────────────────
     private final double FLOAT_SPEED     = 0.05;
-    private final int    FLOAT_AMPLITUDE = 10;
-    private Timer   floatingTimer;
-    private double  floatingOffset = 0;
-    private int     baseY;
+    private final int FLOAT_AMPLITUDE = 10;
+    private Timer floatingTimer;
+    private double floatingOffset = 0;
+    private int baseY;
 
-    // ─── Идентификация ──────────────────────────────────────────────────────
     public final CharacterId characterId;
 
-    // ─── Спрайты и диалоги ──────────────────────────────────────────────────
     protected final SpriteManager  spriteManager;
     protected final DialogueQueue  dialogueQueue;
 
-    // ─── Состояние ──────────────────────────────────────────────────────────
     protected CharacterState currentState = CharacterState.IDLE;
-    protected int            currentFrame = 0;
+    protected int currentFrame = 0;
 
-    // ─── Таймеры idle ───────────────────────────────────────────────────────
     protected Timer idleTimer;
     protected Timer idleToSleepTimer;
 
-    // ─── Перетаскивание ─────────────────────────────────────────────────────
-    private Point   pressPoint;
-    private Point   dragOffset;
+    private Point pressPoint;
+    private Point dragOffset;
     private boolean isDragging = false;
 
-    // ─── UI-элементы ────────────────────────────────────────────────────────
     protected ReactionBubble reactionBubble;
     protected boolean isConfirmationOpen = false;
-    protected boolean isTrickShowing     = false;
+    protected boolean isTrickShowing = false;
     protected JPanel  spritePanel;
+
+    private final Random random = new Random();
 
     // ─── Коллбэк синхронизации состояний ────────────────────────────────────
     //     BiConsumer<CharacterId, CharacterState>: кто + какое новое состояние
@@ -106,13 +101,18 @@ public abstract class CharacterWindow extends JWindow {
     public void setState(CharacterState state) {
         if (currentState == state) return;
         currentState = state;
-        currentFrame = 0;
+        currentFrame = pickRandomFrame(state);
         if (spritePanel != null) spritePanel.repaint();
 
         // Уведомляем контроллер
         if (onStateChange != null) {
             onStateChange.accept(characterId, state);
         }
+    }
+
+    private int pickRandomFrame(CharacterState state) {
+        int count = spriteManager.getFrameCount(state);
+        return count > 1 ? random.nextInt(count) : 0;
     }
 
     /**
@@ -178,11 +178,13 @@ public abstract class CharacterWindow extends JWindow {
     private void setupIdleTimers() {
         int frameDelay = spriteManager.getFrameDelay(CharacterState.IDLE);
         idleTimer = new Timer(frameDelay, e -> {
-            if (currentState == CharacterState.IDLE || currentState == CharacterState.CURIOUS) {
+            // Анимация (смена кадров) только для CURIOUS
+            if (currentState == CharacterState.CURIOUS) {
                 currentFrame = (currentFrame + 1) % Math.max(1,
                         spriteManager.getFrameCount(currentState));
                 if (spritePanel != null) spritePanel.repaint();
             }
+            // IDLE, SLEEPING, DRAGGING — статичный кадр, не трогаем
         });
         idleTimer.start();
 
@@ -224,6 +226,9 @@ public abstract class CharacterWindow extends JWindow {
                 if (isDragging) {
                     isDragging = false;
                     baseY = getLocation().y;
+                    if (floatingTimer != null) floatingTimer.start();  // ← возобновить
+                    setState(CharacterState.IDLE);
+                    resetIdleTimers();
                     return;
                 }
                 if (SwingUtilities.isRightMouseButton(e)) {
@@ -242,6 +247,10 @@ public abstract class CharacterWindow extends JWindow {
                 int dy = e.getY() - pressPoint.y;
                 if (!isDragging && Math.abs(dx) + Math.abs(dy) > DRAG_THRESHOLD) {
                     isDragging = true;
+                    if (floatingTimer != null) floatingTimer.stop();  // ← остановить
+                    setState(CharacterState.DRAGGING);
+                    clearBubble();
+                    dialogueQueue.interrupt();
                 }
                 if (isDragging) {
                     Point loc = getLocation();
