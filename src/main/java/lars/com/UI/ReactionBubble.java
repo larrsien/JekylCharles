@@ -17,12 +17,12 @@ public class ReactionBubble extends JWindow {
     private static final int OUR_WIDTH = 300;
     private static final int OUR_HEIGHT = 150;
 
-    private static final int TEXT_PADDING_LEFT = 30;
-    private static final int TEXT_PADDING_TOP = 40;
+    private static final int TEXT_PADDING_LEFT = 50;
+    private static final int TEXT_PADDING_TOP = 43;
     private static final int TEXT_PADDING_RIGHT = 25;
     private static final int TEXT_PADDING_BOTTOM = 40;
 
-    private static final int FONT_SIZE = 13;
+    private static final int FONT_SIZE = 12;
     private static final String FONT_NAME = "Georgia";
     private static final Color TEXT_COLOR = Color.WHITE;
     private static final int BORDER_THICKNESS = 1;

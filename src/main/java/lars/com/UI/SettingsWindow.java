@@ -19,11 +19,11 @@ public class SettingsWindow extends JWindow {
 
     private static final int  FONT_SIZE = 13;
     private static final String FONT_NAME = "Georgia";
-    private static final int TEXT_PADDING_TOP = 20;
+    private static final int TEXT_PADDING_TOP = 55;
 
-    private static final Color BUTTON_COLOR = new Color(79, 71, 73);
+    private static final Color BUTTON_COLOR = new Color(65, 65, 75);
     private static final int BUTTON_WIDTH = 148;
-    private static final int BUTTON_HEIGHT = 34;
+    private static final int BUTTON_HEIGHT = 36;
     private static final int BUTTON_GAP = 10;
 
     private static final int CLICKS_TO_REACT = 5;
@@ -76,14 +76,10 @@ public class SettingsWindow extends JWindow {
         setBackground(new Color(0, 0, 0, 0));
 
         int centerX = (OUR_WIDTH - BUTTON_WIDTH) / 2;
-        int startY = TEXT_PADDING_TOP + 30;
-
-        // Фейковая кнопка отключения реакций
-        fakeDisableButtonBounds = new Rectangle(centerX, BUTTON_GAP,
+        int startY = TEXT_PADDING_TOP + 30;  // = 85, ниже орнамента question.png
+        fakeDisableButtonBounds = new Rectangle(centerX, startY,
                 BUTTON_WIDTH, BUTTON_HEIGHT);
-
-        // Кнопка закрытия
-        closeButtonBounds = new Rectangle(centerX, fakeDisableButtonBounds.y + BUTTON_HEIGHT + BUTTON_GAP,
+        closeButtonBounds = new Rectangle(centerX, startY + BUTTON_HEIGHT + BUTTON_GAP,
                 BUTTON_WIDTH, BUTTON_HEIGHT);
 
         add(new SettingsPanel());
@@ -270,24 +266,31 @@ public class SettingsWindow extends JWindow {
             drawButton(g2d, closeButtonBounds, "Закрыть", closeHovered, BUTTON_COLOR);
         }
 
-        private void drawButton(Graphics2D g2d, Rectangle b, String text, boolean hovered, Color base) {
-            Color c = hovered ? base.brighter() : base;
-            g2d.setColor(c);
-            g2d.fillRoundRect(b.x, b.y, b.width, b.height, 10, 10);
-            g2d.setColor(c.darker());
-            g2d.setStroke(new BasicStroke(2));
-            g2d.drawRoundRect(b.x, b.y, b.width, b.height, 10, 10);
+        private void drawButton(Graphics2D g2d, Rectangle bounds, String text,
+                                boolean isHovered, Color baseColor) {
+            Color buttonColor = isHovered ? new Color(68, 63, 82) : baseColor;
 
-            Font bf = new Font(FONT_NAME, Font.BOLD, FONT_SIZE);
-            g2d.setFont(bf);
+            g2d.setColor(buttonColor);
+            g2d.fillRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, 12, 12);
+
+            g2d.setColor(new Color(130, 127, 145));
+            g2d.setStroke(new BasicStroke(1.5f));
+            g2d.drawRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, 12, 12);
+
+            Font buttonFont = new Font(FONT_NAME, Font.BOLD, FONT_SIZE);
+            g2d.setFont(buttonFont);
             FontMetrics fm = g2d.getFontMetrics();
-            int tx = b.x + (b.width  - fm.stringWidth(text)) / 2;
-            int ty = b.y + (b.height - fm.getHeight()) / 2 + fm.getAscent();
 
-            g2d.setColor(new Color(0, 0, 0, 100));
-            g2d.drawString(text, tx + 1, ty + 1);
-            g2d.setColor(Color.WHITE);
-            g2d.drawString(text, tx, ty);
+            int textX = bounds.x + (bounds.width  - fm.stringWidth(text)) / 2;
+            int textY = bounds.y + (bounds.height - fm.getHeight()) / 2 + fm.getAscent();
+
+            // Тень (чуть синеватая, не чисто чёрная)
+            g2d.setColor(new Color(0, 0, 20, 130));
+            g2d.drawString(text, textX + 1, textY + 1);
+
+            // Основной текст — чуть жемчужный, не ярко-белый
+            g2d.setColor(new Color(230, 226, 238));
+            g2d.drawString(text, textX, textY);
         }
 
         private void drawMultilineButton(Graphics2D g2d, Rectangle b, String text, boolean hovered, Color base) {

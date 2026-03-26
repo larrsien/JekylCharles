@@ -19,11 +19,11 @@ public class ContextMenu extends JWindow {
     private static final String FONT_NAME = "Georgia";
     private static final Color TEXT_COLOR = Color.WHITE;
     private static final int BORDER_THICKNESS = 1;
-    private static final int TEXT_PADDING_TOP = 49;
+    private static final int TEXT_PADDING_TOP = 66;
 
-    private static final Color BUTTON_COLOR  = new Color(79, 71, 73);
+    private static final Color BUTTON_COLOR = new Color(65, 65, 75);
     private static final int BUTTON_WIDTH  = 148;
-    private static final int BUTTON_HEIGHT = 34;
+    private static final int BUTTON_HEIGHT = 36;
     private static final int BUTTON_GAP    = 10;
 
     private final Runnable onTimerClick;
@@ -82,7 +82,7 @@ public class ContextMenu extends JWindow {
         setAlwaysOnTop(true);
 
         int buttonX = (OUR_WIDTH - BUTTON_WIDTH) / 2;
-        int firstButtonY = TEXT_PADDING_TOP + 50;
+        int firstButtonY = TEXT_PADDING_TOP + 38;
 
         surpriseButtonBounds = new Rectangle(buttonX, firstButtonY, BUTTON_WIDTH, BUTTON_HEIGHT);
         timerButtonBounds = new Rectangle(buttonX, firstButtonY + (BUTTON_HEIGHT + BUTTON_GAP), BUTTON_WIDTH, BUTTON_HEIGHT);
@@ -270,28 +270,28 @@ public class ContextMenu extends JWindow {
 
         private void drawButton(Graphics2D g2d, Rectangle bounds, String text,
                                 boolean isHovered, Color baseColor) {
-            Color buttonColor = isHovered ? baseColor.brighter() : baseColor;
+            Color buttonColor = isHovered ? new Color(68, 63, 82) : baseColor;
 
             g2d.setColor(buttonColor);
-            g2d.fillRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, 10, 10);
+            g2d.fillRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, 12, 12);
 
-            g2d.setColor(buttonColor.darker());
-            g2d.setStroke(new BasicStroke(2));
-            g2d.drawRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, 10, 10);
+            g2d.setColor(new Color(148, 143, 165));
+            g2d.setStroke(new BasicStroke(1.5f));
+            g2d.drawRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, 12, 12);
 
-            Font buttonFont = new Font(FONT_NAME, Font.BOLD, 14);
+            Font buttonFont = new Font(FONT_NAME, Font.BOLD, FONT_SIZE);
             g2d.setFont(buttonFont);
             FontMetrics fm = g2d.getFontMetrics();
 
             int textX = bounds.x + (bounds.width  - fm.stringWidth(text)) / 2;
-            int textY = bounds.y + (bounds.height  - fm.getHeight()) / 2 + fm.getAscent();
+            int textY = bounds.y + (bounds.height - fm.getHeight()) / 2 + fm.getAscent();
 
-            // Тень текста
-            g2d.setColor(new Color(0, 0, 0, 100));
+            // Тень (чуть синеватая, не чисто чёрная)
+            g2d.setColor(new Color(0, 0, 20, 130));
             g2d.drawString(text, textX + 1, textY + 1);
 
-            // Основной текст
-            g2d.setColor(Color.WHITE);
+            // Основной текст — чуть жемчужный, не ярко-белый
+            g2d.setColor(new Color(230, 226, 238));
             g2d.drawString(text, textX, textY);
         }
     }

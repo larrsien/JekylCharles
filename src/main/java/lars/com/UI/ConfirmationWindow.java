@@ -15,7 +15,7 @@ public class ConfirmationWindow extends JWindow {
     private static final int OUR_HEIGHT = 150;
 
     // Отступы
-    private static final int TEXT_PADDING_TOP = 40;
+    private static final int TEXT_PADDING_TOP = 55;
     private static final int BUTTON_PADDING = 40;
     private static final int BUTTON_WIDTH = 80;
     private static final int BUTTON_HEIGHT = 35;
@@ -176,8 +176,8 @@ public class ConfirmationWindow extends JWindow {
             drawTextWithBorder(g2d, message);
 
             // Рисуем кнопки
-            drawButton(g2d, yesButtonBounds, "Да", yesButtonHovered, new Color(79, 71, 73));
-            drawButton(g2d, noButtonBounds, "Нет", noButtonHovered, new Color(79, 71, 73));
+            drawButton(g2d, yesButtonBounds, "Да", yesButtonHovered, new Color(65, 65, 75));
+            drawButton(g2d, noButtonBounds, "Нет", noButtonHovered, new Color(65, 65, 75));
         }
 
         private void drawTextWithBorder(Graphics2D g2d, String text) {
@@ -213,8 +213,8 @@ public class ConfirmationWindow extends JWindow {
             g2d.fillRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, 10, 10);
 
             // Рисуем границу кнопки
-            g2d.setColor(buttonColor.darker());
-            g2d.setStroke(new BasicStroke(2));
+            g2d.setColor(new Color(130, 127, 145));
+            g2d.setStroke(new BasicStroke(1.5f));
             g2d.drawRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, 10, 10);
 
             // Рисуем текст кнопки

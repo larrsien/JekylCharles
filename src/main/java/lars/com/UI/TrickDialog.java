@@ -19,7 +19,7 @@ public class TrickDialog extends JWindow {
     private static final String FONT_NAME = "Georgia";
     private static final Color TEXT_COLOR = Color.WHITE;
     private static final int BORDER_THICKNESS = 1;
-    private static final Color BUTTON_COLOR = new Color(79, 71, 73);
+    private static final Color BUTTON_COLOR = new Color(44, 40, 54);
     private static final int BUTTON_WIDTH = 80;
     private static final int BUTTON_HEIGHT = 35;
 
