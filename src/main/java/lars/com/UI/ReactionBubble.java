@@ -76,8 +76,12 @@ public class ReactionBubble extends JWindow {
 
     private void positionReaction() {
         Point loc = characterWindow.getLocation();
-        int x = loc.x - getWidth() + 20;
-        int y = loc.y + 130;
+        int charW = characterWindow.getWidth();
+        int charH = characterWindow.getHeight();
+
+        int x = loc.x + charW / 2 - getWidth() / 2;
+        int y = loc.y + charH - getHeight() - 40;
+
         setLocation(x, y);
     }
 

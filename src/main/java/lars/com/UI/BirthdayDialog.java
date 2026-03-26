@@ -68,12 +68,12 @@ public class BirthdayDialog extends JWindow {
 
     private void loadBackgroundImage() {
         try {
-            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("frames/birthday.png");
+            InputStream inputStream = getClass().getClassLoader().getResourceAsStream("frames/question.png");
 
             if(inputStream != null) {
                 backgroundImage = ImageIO.read(inputStream);
             } else {
-                File file = new File("frames/birthday.png");
+                File file = new File("frames/question.png");
                 if (file.exists()) {
                     backgroundImage = ImageIO.read(file);
                 }

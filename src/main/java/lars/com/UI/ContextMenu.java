@@ -12,8 +12,8 @@ import java.util.Random;
 
 public class ContextMenu extends JWindow {
 
-    private static final int OUR_WIDTH  = 230;
-    private static final int OUR_HEIGHT = 318; //было 274
+    private static final int OUR_WIDTH  = 250;
+    private static final int OUR_HEIGHT = 322; //было 274
 
     private static final int FONT_SIZE = 13;
     private static final String FONT_NAME = "Georgia";
