@@ -1,19 +1,19 @@
-#define MyAppName "Amon Desktop Pet"
+#define MyAppName "Jekyll & Charles"
 #define MyAppVersion "v1.0"
 #define MyAppPublisher "Lars"
-#define MyAppExeName "AmonDesktopPet.jar"
+#define MyAppExeName "JekyllCharles.jar"
 
 [Setup]
-AppId={{A7D8B3E1-4F2C-4A9B-8E3D-1C5F6A7B8C9D}
+AppId={{B2E9C4F1-5A3D-4B8C-9F2E-7D6A1B3C4E5F}
 AppName={#MyAppName}
 AppVersion=1.0
 AppPublisher={#MyAppPublisher}
-DefaultDirName={autopf}\AmonDesktopPet
+DefaultDirName={autopf}\JekyllCharles
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
-SetupIconFile=amon.ico
+SetupIconFile=jc.ico
 OutputDir=..\installer-output
-OutputBaseFilename=AmonDesktopPet-Setup
+OutputBaseFilename=JekyllCharles-Setup
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
@@ -23,7 +23,7 @@ DisableWelcomePage=no
 CloseApplications=yes
 
 [UninstallRun]
-Filename: "{sys}\taskkill.exe"; Parameters: "/F /IM javaw.exe"; Flags: runhidden; RunOnceId: "KillAmon"
+Filename: "{sys}\taskkill.exe"; Parameters: "/F /IM javaw.exe"; Flags: runhidden; RunOnceId: "KillJekyllCharles"
 
 [Languages]
 Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
@@ -31,10 +31,10 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
-Name: "startup"; Description: "Запускать Амона при старте Windows"; GroupDescription: "Дополнительно:"
+Name: "startup"; Description: "Запускать Jekyll & Charles при старте Windows"; GroupDescription: "Дополнительно:"
 
 [Files]
-Source: "..\target\AmonDesktopPet.jar"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\target\JekyllCharles.jar"; DestDir: "{app}"; Flags: ignoreversion
 
 Source: "jre\*"; DestDir: "{app}\jre"; Flags: ignoreversion recursesubdirs createallsubdirs
 
@@ -48,17 +48,17 @@ Source: "..\browser-extension\icon128.png"; DestDir: "{app}\extension"; Flags: i
 Source: "INSTALL_EXTENSION.html"; DestDir: "{app}"; Flags: ignoreversion
 
 ; Иконка для ярлыков
-Source: "amon.ico"; DestDir: "{app}"; Flags: ignoreversion
+Source: "jc.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 ; Ярлык в меню Пуск
-Name: "{group}\{#MyAppName}"; Filename: "{app}\jre\bin\javaw.exe"; Parameters: "--enable-native-access=ALL-UNNAMED -jar ""{app}\{#MyAppExeName}"""; WorkingDir: "{app}"; IconFilename: "{app}\amon.ico"
+Name: "{group}\{#MyAppName}"; Filename: "{app}\jre\bin\javaw.exe"; Parameters: "--enable-native-access=ALL-UNNAMED -jar ""{app}\{#MyAppExeName}"""; WorkingDir: "{app}"; IconFilename: "{app}\jc.ico"
 ; Ярлык — инструкция по расширению
 Name: "{group}\Установить расширение для браузера"; Filename: "{app}\INSTALL_EXTENSION.html"
 ; Ярлык — удаление
 Name: "{group}\Удалить {#MyAppName}"; Filename: "{uninstallexe}"
 ; Ярлык на рабочем столе (если пользователь поставил галочку)
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\jre\bin\javaw.exe"; Parameters: "--enable-native-access=ALL-UNNAMED -jar ""{app}\{#MyAppExeName}"""; WorkingDir: "{app}"; IconFilename: "{app}\amon.ico"; Tasks: desktopicon
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\jre\bin\javaw.exe"; Parameters: "--enable-native-access=ALL-UNNAMED -jar ""{app}\{#MyAppExeName}"""; WorkingDir: "{app}"; IconFilename: "{app}\jc.ico"; Tasks: desktopicon
 
 [Registry]
 ; Native Messaging — Chrome
@@ -71,7 +71,7 @@ Root: HKCU; Subkey: "Software\Microsoft\Edge\NativeMessagingHosts\com.lars.amon.
 Root: HKCU; Subkey: "Software\Opera Software\Opera Stable\NativeMessagingHosts\com.lars.amon.browser"; ValueType: string; ValueName: ""; ValueData: "{app}\com.lars.amon.browser.json"; Flags: uninsdeletekey
 
 ; Автозапуск при старте Windows (только если пользователь поставил галочку)
-Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "AmonDesktopPet"; ValueData: """{app}\jre\bin\javaw.exe"" --enable-native-access=ALL-UNNAMED -jar ""{app}\{#MyAppExeName}"""; Flags: uninsdeletevalue; Tasks: startup
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "JekyllCharles"; ValueData: """{app}\jre\bin\javaw.exe"" --enable-native-access=ALL-UNNAMED -jar ""{app}\{#MyAppExeName}"""; Flags: uninsdeletevalue; Tasks: startup
 
 [Run]
 ; Открыть инструкцию по расширению после установки
@@ -104,14 +104,14 @@ begin
       '@echo off' + #13#10 +
       'setlocal' + #13#10 +
       'set "APP=' + AppPath + '"' + #13#10 +
-      '"%APP%\jre\bin\java.exe" --enable-native-access=ALL-UNNAMED -cp "%APP%\AmonDesktopPet.jar" lars.com.browser.NativeMessagingBridge' + #13#10,
+      '"%APP%\jre\bin\java.exe" --enable-native-access=ALL-UNNAMED -cp "%APP%\JekyllCharles.jar" lars.com.browser.NativeMessagingBridge' + #13#10,
       False);
 
     ManifestFile := AppPath + '\com.lars.amon.browser.json';
     JsonContent :=
       '{' + #13#10 +
       '  "name": "com.lars.amon.browser",' + #13#10 +
-      '  "description": "Amon Desktop Pet Browser Monitor",' + #13#10 +
+      '  "description": "Jekyll & Charles Browser Monitor",' + #13#10 +
       '  "path": "' + AppPathDoubleSlash + '\\amon-native-host.bat",' + #13#10 +
       '  "type": "stdio",' + #13#10 +
       '  "allowed_origins": ["chrome-extension://epdgpmgmlogldiaebaanjfnlfidgaehb/"]' + #13#10 +

@@ -23,8 +23,6 @@ public class Main {
         SwingUtilities.invokeLater(() -> {
             System.out.println("Запуск этого нереального магнум опуса");
 
-            // Спрайт-менеджеры: передаём ТОЛЬКО имя персонажа (не путь!)
-            // SpriteManager сам построит путь: sprites/jekyll/idle/jekyll_0.png
             SpriteManager jekyllSprites  = new SpriteManager("jekyll");
             SpriteManager charlesSprites = new SpriteManager("charles");
 
@@ -34,7 +32,6 @@ public class Main {
             // Мониторинг процессов
             InternalProcessMonitoring processMonitoring = new InternalProcessMonitoring(controller);
 
-            // BugCloneEvent — спавнит баг-клоны (использует спрайты Шарля для багов)
             BugCloneEvent bugCloneEvent = new BugCloneEvent(controller.getCharles(), charlesSprites);
 
             // Socket server для браузерного расширения

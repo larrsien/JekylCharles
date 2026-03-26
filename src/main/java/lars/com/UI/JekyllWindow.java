@@ -15,14 +15,27 @@ import java.util.Random;
 
 public class JekyllWindow extends CharacterWindow {
 
-    private final List<String> rightClickPhrases;
     private final Random random = new Random();
+    private static final List<String> LEFT_CLICK_PHRASES = List.of(
+            "...",
+            "Что?",
+            "Я здесь.",
+            "Зачем?"
+    );
+    private static final List<String> RIGHT_CLICK_PHRASES = List.of(
+            "...",
+            "Зачем Вы это делаете?",
+            "Хм.",
+            "Я всё вижу.",
+            "Правая кнопка мыши. Интересный выбор.",
+            "Вы ожидали меню? Его здесь нет.",
+            "Я не Шарль. Запомните это.",
+            "Снова?",
+            "Любопытство — это хорошо. Иногда."
+    );
 
-    public JekyllWindow(SpriteManager spriteManager,
-                        DialogueQueue dialogueQueue,
-                        List<String> rightClickPhrases) {
+    public JekyllWindow(SpriteManager spriteManager, DialogueQueue dialogueQueue) {
         super(CharacterId.JEKYLL, spriteManager, dialogueQueue);
-        this.rightClickPhrases = rightClickPhrases;
     }
 
     @Override
@@ -41,7 +54,7 @@ public class JekyllWindow extends CharacterWindow {
             }
         };
         panel.setOpaque(false);
-        panel.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
+        panel.setPreferredSize(new Dimension(OUR_WIDTH, OUR_HEIGHT));
         return panel;
     }
 
@@ -54,12 +67,20 @@ public class JekyllWindow extends CharacterWindow {
             resetIdleTimers();
         }
 
-        if (rightClickPhrases == null || rightClickPhrases.isEmpty()) return;
+        if (RIGHT_CLICK_PHRASES == null || RIGHT_CLICK_PHRASES.isEmpty()) return;
 
-        // Не добавляем новую реплику, пока текущая не закончилась
         if (dialogueQueue.isActive()) return;
 
-        String text = rightClickPhrases.get(random.nextInt(rightClickPhrases.size()));
+        String text = RIGHT_CLICK_PHRASES.get(random.nextInt(RIGHT_CLICK_PHRASES.size()));
         dialogueQueue.add(new DialogueLine(CharacterId.JEKYLL, text));
     }
+
+    @Override
+    protected void onLeftClick() {
+        if (dialogueQueue.isActive()) return;
+
+        String text = LEFT_CLICK_PHRASES.get(random.nextInt(LEFT_CLICK_PHRASES.size()));
+        dialogueQueue.add(new DialogueLine(CharacterId.JEKYLL, text));
+    }
+
 }

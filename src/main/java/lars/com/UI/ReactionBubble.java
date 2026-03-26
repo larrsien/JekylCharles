@@ -11,7 +11,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Random;
 
 public class ReactionBubble extends JWindow {
 
@@ -53,7 +52,7 @@ public class ReactionBubble extends JWindow {
     public ReactionBubble(String reaction, CharacterWindow characterWindow, Runnable onDone) {
         this.characterWindow = characterWindow;
         this.onDone = onDone;
-        this.reaction = parseGlitchMarker(reaction);
+        this.reaction = reaction;
 
         loadBackgroundImage();
         initializeWindow();
@@ -62,28 +61,6 @@ public class ReactionBubble extends JWindow {
         scheduleAutoClose();
     }
 
-    private String parseGlitchMarker(String raw) {
-        if (raw == null) return "";
-
-        if (!isGlitchEnabled()) {
-            return raw.replaceAll("(?i)\\[GLITCH:[^\\]]*]", "").trim();
-        }
-
-        int start = raw.indexOf("[GLITCH:");
-        if (start == -1) return raw;
-        int end   = raw.indexOf("]", start);
-        if (end == -1) return raw;
-
-        String fragment = raw.substring(start + 8, end).trim();
-        glitchFragment  = fragment;
-
-        String cleaned  = raw.substring(0, start).trim() + raw.substring(end + 1);
-        return cleaned.trim();
-    }
-
-    // ════════════════════════════════════════════════════════════════════════
-    //  Инициализация
-    // ════════════════════════════════════════════════════════════════════════
 
     private void initializeWindow() {
         setSize(OUR_WIDTH, OUR_HEIGHT);
@@ -198,9 +175,7 @@ public class ReactionBubble extends JWindow {
         if (typingTimer != null) typingTimer.stop();
         isTyping = false;
 
-        if (currentPage == textPages.size() - 1 && glitchFragment != null) {
-            startGlitchAnimation();
-        } else if (currentPage < textPages.size() - 1) {
+        if (currentPage < textPages.size() - 1) {
             scheduleAutoAdvance();
         }
     }
@@ -213,8 +188,6 @@ public class ReactionBubble extends JWindow {
 
         if (currentPage < textPages.size() - 1) {
             scheduleAutoAdvance();
-        } else if (glitchFragment != null) {
-            startGlitchAnimation();
         }
     }
 
@@ -246,10 +219,6 @@ public class ReactionBubble extends JWindow {
                 ? (textPages.size() - 1) * AUTO_ADVANCE_DELAY : 0;
 
         return typingTime + pageTransitionTime + FINAL_PAGE_DELAY;
-    }
-
-    public int getTotalDisplayTime() {
-        return calculateTotalDisplayTime();
     }
 
     public void cleanup() {

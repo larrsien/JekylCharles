@@ -78,11 +78,6 @@ public class SettingsWindow extends JWindow {
         int centerX = (OUR_WIDTH - BUTTON_WIDTH) / 2;
         int startY = TEXT_PADDING_TOP + 30;
 
-        // Кнопка переключения подсказок к шифру
-        String cipherLabel = buildToggleLabel();
-        int cipherHeight = calcButtonHeight(cipherLabel);
-        toggleButtonBounds = new Rectangle(centerX, startY, BUTTON_WIDTH, cipherHeight);
-
         // Фейковая кнопка отключения реакций
         fakeDisableButtonBounds = new Rectangle(centerX, BUTTON_GAP,
                 BUTTON_WIDTH, BUTTON_HEIGHT);
@@ -166,11 +161,6 @@ public class SettingsWindow extends JWindow {
         return Math.max(BUTTON_HEIGHT, total);
     }
 
-    private String buildToggleLabel() {
-        return charlesWindow.isGlitchEnabled()
-                ? "Отключить подсказки к шифру"
-                : "Включить подсказки к шифру";
-    }
 
     private void triggerAmonReaction() {
         if (glitchTimer != null) glitchTimer.stop();
@@ -231,12 +221,7 @@ public class SettingsWindow extends JWindow {
                 @Override public void mouseReleased(MouseEvent e) {
                     Point p = e.getPoint();
 
-                    if (toggleButtonBounds.contains(p)) {
-                        charlesWindow.setGlitchEnabled(!charlesWindow.isGlitchEnabled());
-                        rebuildButtonBounds();
-                        repaint();
-
-                    } else if (fakeDisableButtonBounds.contains(p)) {
+                    if (fakeDisableButtonBounds.contains(p)) {
                         fakeClickCount++;
                         glitchActive  = true;
                         glitchOffsetX = random.nextInt(7) - 3;
@@ -259,10 +244,6 @@ public class SettingsWindow extends JWindow {
             int centerX = (OUR_WIDTH - BUTTON_WIDTH) / 2;
             int startY  = TEXT_PADDING_TOP + 30;
 
-            String cipherLabel = buildToggleLabel();
-            int cipherH = calcButtonHeight(cipherLabel);
-            toggleButtonBounds = new Rectangle(centerX, startY, BUTTON_WIDTH, cipherH);
-
             fakeDisableButtonBounds = new Rectangle(centerX, toggleButtonBounds.y + BUTTON_GAP,
                     BUTTON_WIDTH, BUTTON_HEIGHT);
 
@@ -281,8 +262,6 @@ public class SettingsWindow extends JWindow {
                 g2d.drawImage(backgroundImage, 0, 0, OUR_WIDTH, OUR_HEIGHT, this);
             }
 
-            // Кнопка подсказок к шифру
-            drawMultilineButton(g2d, toggleButtonBounds, buildToggleLabel(), toggleHovered, BUTTON_COLOR);
 
             // Фейковая кнопка с глитчем
             drawGlitchButton(g2d);

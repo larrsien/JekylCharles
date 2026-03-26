@@ -54,6 +54,19 @@ public class DualResponseLibrary {
     public static DualResponseLibrary createDefault() {
         DualResponseLibrary lib = new DualResponseLibrary();
 
+
+        lib.addMono("left_click", CharacterId.CHARLES,
+                "Хм-м?",
+                "Что-то хотели?",
+                "Я Вас слушаю.",
+                "Не стоит трогать меня без повода.");
+
+        lib.addMono("left_click", CharacterId.JEKYLL,
+                "...",
+                "Что?",
+                "Я здесь.",
+                "Зачем?");
+
         // ── default ───────────────────────────────────────────────────────────
         lib.addMono("default", CharacterId.CHARLES,
                 "Хм-м. Занятно.",
