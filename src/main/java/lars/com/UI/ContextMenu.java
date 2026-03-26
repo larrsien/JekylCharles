@@ -19,12 +19,12 @@ public class ContextMenu extends JWindow {
     private static final String FONT_NAME = "Georgia";
     private static final Color TEXT_COLOR = Color.WHITE;
     private static final int BORDER_THICKNESS = 1;
-    private static final int TEXT_PADDING_TOP = 66;
+    private static final int TEXT_PADDING_TOP = 70;
 
     private static final Color BUTTON_COLOR = new Color(65, 65, 75);
-    private static final int BUTTON_WIDTH  = 148;
-    private static final int BUTTON_HEIGHT = 36;
-    private static final int BUTTON_GAP    = 10;
+    private static final int BUTTON_WIDTH  = 120;
+    private static final int BUTTON_HEIGHT = 29;
+    private static final int BUTTON_GAP    = 8;
 
     private final Runnable onTimerClick;
     private final Runnable onBirthdayClick;
@@ -82,7 +82,7 @@ public class ContextMenu extends JWindow {
         setAlwaysOnTop(true);
 
         int buttonX = (OUR_WIDTH - BUTTON_WIDTH) / 2;
-        int firstButtonY = TEXT_PADDING_TOP + 38;
+        int firstButtonY = TEXT_PADDING_TOP + 47;
 
         surpriseButtonBounds = new Rectangle(buttonX, firstButtonY, BUTTON_WIDTH, BUTTON_HEIGHT);
         timerButtonBounds = new Rectangle(buttonX, firstButtonY + (BUTTON_HEIGHT + BUTTON_GAP), BUTTON_WIDTH, BUTTON_HEIGHT);

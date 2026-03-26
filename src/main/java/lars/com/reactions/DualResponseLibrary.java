@@ -137,6 +137,31 @@ public class DualResponseLibrary {
                 new DialogueLine(CharacterId.JEKYLL,  "Ничего. Просто тихо."),
                 new DialogueLine(CharacterId.CHARLES, "Тишина — это роскошь. Наслаждайтесь."));
 
+        lib.addMono("lilith search", CharacterId.CHARLES,
+                "Предательница.",
+                "Знаете, что самое забавное в ваших  людских мифах о Лилит? Вы делаете из нее символ независимости. А на деле — она просто еще одна сломанная игрушка, которая решила, что может играть по своим правилам.");
+
+        lib.addDialogue("lilith search",
+                new DialogueLine(CharacterId.JEKYLL,  "Зачем ты вообще подпускал ее так близко?"),
+                new DialogueLine(CharacterId.CHARLES, "Мне было скучно. а она так красиво злилась на весь мир. "));
+
+
+        lib.addMono("x.com", CharacterId.CHARLES,
+                "Твиттер. Место, где каждый считает своё мнение ценным.",
+                "Надеюсь, Вы не читаете это слишком серьёзно.");
+        lib.addMono("x.com", CharacterId.JEKYLL,
+                "Опять туда.",
+                "Что-то интересное или просто листаете?");
+
+// Диалог:
+        lib.addDialogue("x.com",
+                new DialogueLine(CharacterId.CHARLES, "Ах, квинтэссенция человеческого тщеславия! Коротко, ядовито и у всех на виду. "),
+                new DialogueLine(CharacterId.JEKYLL,  "Чаще всего – информационный мусор."));
+        lib.addDialogue("x.com",
+                new DialogueLine(CharacterId.CHARLES, "Я видел твой профиль здесь, Джеки. Эти странные треды, наборы цифр и букв... Думаешь, я не смогу взломать твой шифр?"),
+                new DialogueLine(CharacterId.JEKYLL,  "Ты не знаешь ключа. "),
+                new DialogueLine(CharacterId.CHARLES, "Звучит как вызов для нас двоих!"),
+                new DialogueLine(CharacterId.JEKYLL,  "Двоих?"));
 
         return lib;
     }

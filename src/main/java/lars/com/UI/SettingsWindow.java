@@ -17,13 +17,13 @@ public class SettingsWindow extends JWindow {
     private static final int OUR_WIDTH = 230;
     private static final int OUR_HEIGHT = 300;
 
-    private static final int  FONT_SIZE = 13;
+    private static final int  FONT_SIZE = 12;
     private static final String FONT_NAME = "Georgia";
     private static final int TEXT_PADDING_TOP = 55;
 
     private static final Color BUTTON_COLOR = new Color(65, 65, 75);
-    private static final int BUTTON_WIDTH = 148;
-    private static final int BUTTON_HEIGHT = 36;
+    private static final int BUTTON_WIDTH  = 120;
+    private static final int BUTTON_HEIGHT = 30;
     private static final int BUTTON_GAP = 10;
 
     private static final int CLICKS_TO_REACT = 5;

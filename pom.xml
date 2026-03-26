@@ -36,6 +36,7 @@
   </dependencies>
 
   <build>
+    <finalName>JekyllCharles</finalName>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

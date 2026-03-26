@@ -19,12 +19,12 @@ public class BirthdayDialog extends JWindow {
     private static final int FONT_SIZE = 13;
     private static final int BORDER_THICKNESS = 1;
     private static final Color TEXT_COLOR = Color.WHITE;
-    private static final int TEXT_PADDING_TOP = 58;
+    private static final int TEXT_PADDING_TOP = 70;
 
     private static final Color BUTTON_COLOR = new Color(65, 65, 75);
-    private static final int BUTTON_WIDTH = 148;
-    private static final int BUTTON_HEIGHT = 36;
-    private static final int BUTTON_GAP = 10;
+    private static final int BUTTON_WIDTH  = 100;
+    private static final int BUTTON_HEIGHT = 28;
+    private static final int BUTTON_GAP = 8;
 
     private static final String[] PEOPLE = {
             "Аден",
@@ -91,7 +91,7 @@ public class BirthdayDialog extends JWindow {
         setFocusableWindowState(true);
 
         int buttonX = (OUR_WIDTH - BUTTON_WIDTH) / 2;
-        int firstButtonY = TEXT_PADDING_TOP + 18;
+        int firstButtonY = TEXT_PADDING_TOP + 30;
 
         for (int i = 0; i < PEOPLE.length; i++) {
             buttonBounds[i] = new Rectangle(buttonX, firstButtonY + i * (BUTTON_HEIGHT + BUTTON_GAP), BUTTON_WIDTH,
@@ -206,7 +206,7 @@ public class BirthdayDialog extends JWindow {
             g2d.setStroke(new BasicStroke(1.5f));
             g2d.drawRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, 10, 10);
 
-            Font buttonFont = new Font(FONT_NAME, Font.BOLD, 14);
+            Font buttonFont = new Font(FONT_NAME, Font.BOLD, FONT_SIZE);
             g2d.setFont(buttonFont);
             FontMetrics fm = g2d.getFontMetrics();
 

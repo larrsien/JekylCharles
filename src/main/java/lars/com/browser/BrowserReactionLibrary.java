@@ -13,6 +13,8 @@ public class BrowserReactionLibrary {
         keywordToCategory.put("ведьма", "witch search");
         keywordToCategory.put("witch", "witch search");
         keywordToCategory.put("бог", "God search");
+        keywordToCategory.put("лилит",  "lilith search");
+        keywordToCategory.put("lilith", "lilith search");
     }
 
     // Поиск по запросу → категория
@@ -28,8 +30,6 @@ public class BrowserReactionLibrary {
         return null;
     }
 
-    // Категория сайта из background.js → категория для DualResponseLibrary
-    // Просто пробрасываем как есть (youtube → youtube, discord → discord)
     public String getCategoryBySite(String siteCategory) {
         if (siteCategory == null || siteCategory.equals("unknown")) return null;
         return siteCategory;

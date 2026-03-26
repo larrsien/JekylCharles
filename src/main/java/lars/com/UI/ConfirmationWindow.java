@@ -17,8 +17,8 @@ public class ConfirmationWindow extends JWindow {
     // Отступы
     private static final int TEXT_PADDING_TOP = 55;
     private static final int BUTTON_PADDING = 40;
-    private static final int BUTTON_WIDTH = 80;
-    private static final int BUTTON_HEIGHT = 35;
+    private static final int BUTTON_WIDTH  = 80;
+    private static final int BUTTON_HEIGHT = 30;
     private static final int BUTTON_SPACING = 20;
 
     // Шрифт
