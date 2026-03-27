@@ -21,8 +21,8 @@ public abstract class CharacterWindow extends JWindow {
 
     private static final int DRAG_THRESHOLD = 5;
 
-    private final double FLOAT_SPEED = 0.05;
-    private final int FLOAT_AMPLITUDE = 10;
+    private static final double FLOAT_SPEED = 0.05;
+    private static final int FLOAT_AMPLITUDE = 10;
     private Timer floatingTimer;
     private double floatingOffset = 0;
     private int baseY;
@@ -118,7 +118,7 @@ public abstract class CharacterWindow extends JWindow {
 
     public void clearBubble() {
         if (reactionBubble != null) {
-            reactionBubble.dispose();
+            reactionBubble.cleanup();
             reactionBubble = null;
         }
     }
@@ -225,8 +225,8 @@ public abstract class CharacterWindow extends JWindow {
                     isDragging = true;
                     if (floatingTimer != null) floatingTimer.stop();  // ← остановить
                     setState(CharacterState.DRAGGING);
-                    clearBubble();
                     dialogueQueue.interrupt();
+                    clearBubble();
                     onDragStart();
                 }
                 if (isDragging) {

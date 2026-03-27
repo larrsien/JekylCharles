@@ -6,9 +6,7 @@ import oshi.software.os.OSProcess;
 import oshi.software.os.OperatingSystem;
 
 import javax.swing.*;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -21,12 +19,24 @@ public class InternalProcessMonitoring {
     private Set<String> previousProcesses;
     private final Set<String> alreadyReacted = new HashSet<>();
 
-    private static final String[] KEYWORDS = {
-            "microsoftedge", "deadbydaylight", "repo",
-            "minecraft", "discord", "telegram", "steam",
-            "word", "paint", "hades", "peak",
-            "warframe", "kebabchief", "liarsbar", "nightreign",
-            "enigmatrials", "wherewindsmeet"
+    //  [0] — подстрока имени процесса, [1] — категория реакции.
+    private static final String[][] KEYWORD_TO_CATEGORY = {
+
+            {"msedge", "browser"},
+            {"deadbydaylight", "deadbydaylight"},
+            {"repo", "repo"},
+            {"minecraft", "minecraft"},
+            {"discord", "discord"},
+            {"steam", "steam"},
+            {"photoshop", "photoshop"},
+            {"sixvpn", "sixvpn"},
+            {"telegram", "telegram"},
+            {"winword", "winword"},
+            {"mspaint", "mspaint"},
+            {"nightreign", "nightreign"},
+            {"kebabchefs", "kebabchefs"},
+            {"warframe", "warframe"},
+            {"liarsbar", "liarsbar"}
     };
 
     public InternalProcessMonitoring(PetController petController) {
@@ -57,6 +67,15 @@ public class InternalProcessMonitoring {
         }
     }
 
+    private String findCategory(String processName) {
+        for (String[] pair : KEYWORD_TO_CATEGORY) {
+            if (processName.contains(pair[0])) {
+                return pair[1];
+            }
+        }
+        return null;
+    }
+
     private void scanProcesses() {
         try {
             Set<String> currentProcesses = new HashSet<>();
@@ -66,14 +85,20 @@ public class InternalProcessMonitoring {
                 String processName = osProcess.getName().toLowerCase();
                 currentProcesses.add(processName);
 
-                if (!previousProcesses.contains(processName) && isCompatible(processName)) {
-                    notifyNewProcess(processName);
+                if (!previousProcesses.contains(processName)) {
+                    String category = findCategory(processName);
+                    if (category != null) {
+                        notifyNewProcess(processName, category);
+                    }
                 }
             }
 
             for (String oldProcess : previousProcesses) {
-                if (!currentProcesses.contains(oldProcess) && isCompatible(oldProcess)) {
-                    notifyProcessClosed(oldProcess);
+                if (!currentProcesses.contains(oldProcess)) {
+                    String category = findCategory(oldProcess);
+                    if (category != null) {
+                        notifyProcessClosed(oldProcess, category);
+                    }
                 }
             }
 
@@ -84,10 +109,7 @@ public class InternalProcessMonitoring {
         }
     }
 
-    private void notifyNewProcess(String processName) {
-        String category = mapProcessToCategory(processName);
-
-        // Уже реагировали на эту категорию — пропускаем
+    private void notifyNewProcess(String processName, String category) {
         if (alreadyReacted.contains(category)) return;
         alreadyReacted.add(category);
 
@@ -95,40 +117,8 @@ public class InternalProcessMonitoring {
         SwingUtilities.invokeLater(() -> petController.react(category));
     }
 
-    private void notifyProcessClosed(String processName) {
-        System.out.println("Процесс закрыт: " + processName);
-    }
-
-    private boolean isCompatible(String processName) {
-        for (String keyWord : KEYWORDS) {
-            if (processName.contains(keyWord)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private String mapProcessToCategory(String processName) {
-        String lower = processName.toLowerCase();
-
-        if (lower.contains("telegram")) return "telegram";
-        if (lower.contains("discord")) return "discord";
-        if (lower.contains("steam")) return "steam";
-        if (lower.contains("microsoftedge")) return "browser";
-        if (lower.contains("paint")) return "painting";
-        if (lower.contains("minecraft")) return "minecraft";
-        if (lower.contains("deadbydaylight")) return "deadbydaylight";
-        if (lower.contains("repo")) return "repo";
-        if (lower.contains("word")) return "word";
-        if (lower.contains("hades")) return "hades";
-        if (lower.contains("peak")) return "peak";
-        if (lower.contains("warframe"))return "warframe";
-        if (lower.contains("kebabchief"))return "kebabchief";
-        if (lower.contains("liarsbar"))return "liarsbar";
-        if (lower.contains("nightreign"))return "nightreign";
-        if (lower.contains("enigmatrials"))return "enigmatrials";
-        if (lower.contains("wherewindsmeet"))return "wherewindsmeet";
-
-        return "default";
+    private void notifyProcessClosed(String processName, String category) {
+        alreadyReacted.remove(category);
+        System.out.println("Процесс закрыт: " + processName + " → сброс категории " + category);
     }
 }

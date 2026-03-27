@@ -13,6 +13,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
+
 // баг будет только у шарля
 
 public class BugCloneEvent {
@@ -35,7 +37,7 @@ public class BugCloneEvent {
     public BugCloneEvent(CharlesWindow charlesWindow, SpriteManager spriteManager) {
         this.charlesWindow = charlesWindow;
         this.spriteManager = spriteManager;
-        this.scheduler = Executors.newScheduledThreadPool(1);
+        this.scheduler = newSingleThreadScheduledExecutor();
         this.random = new Random();
     }
 

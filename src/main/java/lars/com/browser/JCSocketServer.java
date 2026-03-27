@@ -17,7 +17,7 @@ public class JCSocketServer {
     private ServerSocket serverSocket;
     private Thread serverThread;
     private volatile boolean running;
-    private long lastReactionTime = 0;
+    private volatile long lastReactionTime = 0;
     private static final long COOLDOWN_MS = 1000;
 
     public JCSocketServer(PetController petController) {
@@ -29,13 +29,13 @@ public class JCSocketServer {
 
     public void start() {
         if (running) return;
+        running = true;
 
         serverThread = new Thread(() -> {
             try {
                 serverSocket = new ServerSocket();
                 serverSocket.setReuseAddress(true);
                 serverSocket.bind(new java.net.InetSocketAddress(PORT));
-                running = true;
                 System.out.println("Socket Server запущен на порту " + PORT);
 
                 while (running) {
@@ -50,6 +50,7 @@ public class JCSocketServer {
                 }
             } catch (IOException e) {
                 System.err.println("Не удалось запустить Socket Server: " + e.getMessage());
+                running = false;
             }
         }, "JCSocketServer");
 

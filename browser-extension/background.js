@@ -39,43 +39,22 @@ function getSiteCategory(url) {
   if (!url) return 'unknown';
   const u = url.toLowerCase();
 
-  if (u.includes('blacksunprizrak.lofter.com')) return 'blacksunprizrak.lofter.com';
-  if (u.includes('x.com/blacksunprizrak')) return 'x.com/BlackSunPrizrak';
-  if (u.includes('x.com/moroz_6')) return 'x.com/Moroz_6';
-
-  if (u.includes('steamcommunity.com') || u.includes('store.steampowered.com/')) return 'steam';
-  if (u.includes('lofter.com')) return 'lofter';
   if (u.includes('youtube.com')) return 'youtube';
+  if (u.includes('steamcommunity.com') || u.includes('store.steampowered.com/')) return 'steam browser';
   if (u.includes('twitter.com') || u.includes('x.com')) return 'x.com';
-  if (u.includes('discord.com')) return 'discord';
   if (u.includes('tumblr.com')) return 'tumblr';
   if (u.includes('drive.google.com')) return 'google disc';
   if (u.includes('mail.google.com')) return 'gmail';
-
-  if (u.includes('aliexpress.ru') || u.includes('wildberries.ru') || u.includes('ozon.ru')
-    || u.includes('ozon.com') || u.includes('aliexpress.com') || u.includes('market.yandex.ru')
-    || u.includes('dns-shop.ru') || u.includes('www.taobao.com')) return 'marketplaces';
-
-
-
-  if (u.includes('lordofthemysteries.fandom.com/wiki/amon')) return 'amon search';
-  if (u.includes('lordofthemysteries.fandom.com/wiki/adam')
-    || u.includes('lordofthemysteries.fandom.com/wiki/ancient_sun_god')
-    || u.includes('lordofthemysteries.fandom.com/wiki/sasrir')) return 'asg search';
-  if (u.includes('lordofthemysteries.fandom.com/wiki/ouroboros')) return 'ouroboros search';
-  if (u.includes('lordofthemysteries.fandom.com/wiki/pallez_zoroast')) return 'pallez search';
-  if (u.includes('lordofthemysteries.fandom.com/wiki/klein_moretti')) return 'klein search';
-  if (u.includes('lordofthemysteries.fandom.com/wiki/zhou_mingrui')) return 'zhou search';
-  if (u.includes('lordofthemysteries.fandom.com/wiki/medici')
-    || u.includes('lordofthemysteries.fandom.com/wiki/sauron-einhorn-medici')) return 'medici search';
-  if (u.includes('lordofthemysteries.fandom.com/wiki/leonard_mitchell')) return 'leonard search';
-  if (u.includes('lordofthemysteries.fandom.com/wiki/evernight_goddess')) return 'evernight search';
-
-  if (u.includes('twitch.tv')) return 'twitch';
   if (u.includes('vk.com')) return 'vkontakte';
-  if (u.includes('web.telegram.org')) return 'telegram';
   if (u.includes('fragrantica.ru') || u.includes('fragrantica.com')) return 'fragrantica';
-  if (u.includes('yummyani.me/catalog/item/monstr')) return 'monster anime';
+  if (u.includes('pinterest.ru') || u.includes('pinterest.com')) return 'pinterest';
+  if (u.includes('music.yandex.ru')) return 'yandex music';
+  if (u.includes('https://ficbook.net/authors/0195b284-abd9-71f1-a6ae-e4857e3d9563')) return 'ficbook';
+  if (u.includes('https://ru.wikipedia.org/wiki/%D0%91%D0%BE%D0%B3')) return 'god search';
+  if (u.includes('https://ru.wikipedia.org/wiki/%D0%9B%D1%8E%D1%86%D0%B8%D1%84%D0%B5%D1%80')) return 'satan search';
+  if (u.includes('https://ru.wikipedia.org/wiki/%D0%90%D0%B4%D0%B0%D0%BC')) return 'adam';
+  if (u.includes('https://ru.wikipedia.org/wiki/%D0%9B%D0%B8%D0%BB%D0%B8%D1%82')) return 'lilith';
+
 
   return 'unknown';
 }

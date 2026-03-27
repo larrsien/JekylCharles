@@ -12,10 +12,18 @@ public class DialogueQueue {
     private final Consumer<DialogueLine> displayer;
 
     private boolean busy = false;
+    private Runnable onAllDone;
 
     public DialogueQueue(Consumer<DialogueLine> displayer) {
         this.displayer = displayer;
     }
+
+    public synchronized void addWithCallback(DialogueLine line, Runnable callback) {
+        this.onAllDone = callback;
+        pending.addLast(line);
+        tryNext();
+    }
+
 
     public synchronized void add(DialogueLine line) {
         pending.addLast(line);
@@ -34,11 +42,20 @@ public class DialogueQueue {
 
     public synchronized void onBubbleDone() {
         busy = false;
+
+        if (pending.isEmpty() && onAllDone != null) {
+            Runnable cb = onAllDone;
+            onAllDone = null;
+            SwingUtilities.invokeLater(cb);
+            return;
+        }
+
         tryNext();
     }
 
     public synchronized void interrupt() {
         pending.clear();
+        onAllDone = null;
         busy = false;
     }
 

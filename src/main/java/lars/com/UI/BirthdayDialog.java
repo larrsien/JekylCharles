@@ -21,7 +21,7 @@ public class BirthdayDialog extends JWindow {
     private static final Color TEXT_COLOR = Color.WHITE;
     private static final int TEXT_PADDING_TOP = 70;
 
-    private static final Color BUTTON_COLOR = new Color(65, 65, 75);
+    private static final Color BUTTON_COLOR = new Color(75, 75, 78);
     private static final int BUTTON_WIDTH  = 100;
     private static final int BUTTON_HEIGHT = 28;
     private static final int BUTTON_GAP = 8;
@@ -36,8 +36,8 @@ public class BirthdayDialog extends JWindow {
     private static final String[] CONGRATULATIONS = {
             "Аден",
             "Катя",
-            "Каргли",
-            "Янчи"
+            "короче. вот мое поздравление для дуни. желаю тебе никогда не мыться",
+            "дуня дуНЕЧКА ДУНЯША!!! ПРИВЕТ!!! С ДНЁМ РОЖДЕНИЯ!!!!! никогда не болей и не грусти, пусть всё будет у тебя замечательно пожалуйста я очень прошу!!!! ты классный никогда не лысей!!!! а ещё не слушай каргли мыться полезно!!!!"
     };
 
     private final CharlesWindow charlesWindow;
@@ -104,10 +104,13 @@ public class BirthdayDialog extends JWindow {
     }
 
     private void positionDialog() {
-        Point amonLocation = charlesWindow.getLocation();
+        Point charlesPos = charlesWindow.getLocation();
+        int charW = charlesWindow.getWidth();
+        int charH = charlesWindow.getHeight();
 
-        int x = amonLocation.x - getWidth() + 20;
-        int y = amonLocation.y - 50;
+        int x = charlesPos.x + (charW / 2) - (getWidth() / 2) - 110;
+
+        int y = charlesPos.y + (charH / 2) - 100;
 
         setLocation(x, y);
     }

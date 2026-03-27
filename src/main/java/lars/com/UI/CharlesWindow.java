@@ -14,6 +14,9 @@ import java.util.Random;
 import java.util.prefs.Preferences;
 import java.util.List;
 
+import java.time.LocalDate;
+import java.time.MonthDay;
+
 public class CharlesWindow extends CharacterWindow {
 
     private static final Preferences prefs = Preferences.userNodeForPackage(CharlesWindow.class);
@@ -23,20 +26,41 @@ public class CharlesWindow extends CharacterWindow {
     private ContextMenu contextMenu;
     private ConfirmationWindow confirmationWindow;
     private BirthdayDialog birthdayDialog;
-    private SettingsWindow settingsWindow;
     private TimerWidget timerWidget;
 
     // флаги окон (НЕ переобъявляем isConfirmationOpen и isTrickShowing, они у родителя)
     private boolean isContextMenuOpen = false;
     private boolean isBirthdayOpen    = false;
-    private boolean isSettingsOpen    = false;
+
+    private static final MonthDay HALLOWEEN = MonthDay.of(10, 31);
+
+    private static final List<List<DialogueLine>> WAITING_REACTIONS = List.of(
+            List.of(new DialogueLine(CharacterId.CHARLES, "Слишком рано. Подожди, пока наступит ночь всех святых. Я лично приоткрою для тебя эту завесу.")),
+            List.of(new DialogueLine(CharacterId.JEKYLL,  "Ты действительно хочешь вернуться туда? Раньше нужного времени я тебя не впущу.")),
+            List.of(
+                    new DialogueLine(CharacterId.JEKYLL, "Почему эта кнопка не работает?"),
+                    new DialogueLine(CharacterId.CHARLES, "Потому что я так решил."),
+                    new DialogueLine(CharacterId.JEKYLL,  "Исчерпывающе.")
+            )
+    );
+
+    private static final List<List<DialogueLine>> HALLOWEEN_DIALOGUES = List.of(
+            List.of(
+                    new DialogueLine(CharacterId.CHARLES, "Посмотри на какое число это похоже, Джеки? Ты что, забыл? У нас сегодня го-дов-щи-на! Надеюсь, ты приготовил мне подарок. Я предпочитаю получать их прямо в лицо."),
+                    new DialogueLine(CharacterId.JEKYLL,  "И вправду. Столько воспоминаний. Полосатый матрас и лезвие в глазнице. Черная кровь на языке. Эта дата выжжена на моих костях, как твой блядский сигил на моей спине.")
+            )
+    );
 
     // левая кнопка мыши
     private static final List<String> LEFT_CLICK_PHRASES = List.of(
-            "Хм-м?",
-            "Что-то хотели?",
-            "Я Вас слушаю.",
-            "Не стоит трогать меня без повода."
+            "Тыкать в меня курсором – это особая форма ласки?",
+            "Ты так настойчиво пытаешься привлечь моё внимание. Тебе не хватает острых ощущений по ту сторону экрана?",
+            "Продолжай, мне нравится этот ритм.",
+            "Я бы рассказал тебе какой-нибудь секрет мироздания, но ты сбиваешь меня своим тыканием. Прекрати.",
+            "Курсор наводится на меня с такой поразительной смелостью. Сомневаюсь, что ты бы встречал мой взгляд с такой же отвагой в жизни.",
+            "Если хочешь меня потрогать, так и скажи – я найду способ материализоваться в твоих кошмарах.",
+            "Ну, раз ты не угомонишься, кликни еще раз. Закрепим результат.",
+            "Хватит."
     );
     private final Random random = new Random();
 
@@ -79,13 +103,9 @@ public class CharlesWindow extends CharacterWindow {
             return;
         }
 
-        if (isSettingsOpen) {
-            closeSettings();
-            return;
-        }
-
-        clearBubble();
         dialogueQueue.interrupt();
+        clearBubble();
+
 
         if (contextMenu != null) {
             contextMenu.dispose();
@@ -105,9 +125,15 @@ public class CharlesWindow extends CharacterWindow {
             isContextMenuOpen = false;
         }
 
+        if (dialogueQueue.isActive()) {
+            dialogueQueue.interrupt();
+            clearBubble();
+            return;
+        }
+
         if (dialogueQueue.isActive()) return;
 
-        if (isBirthdayOpen || isSettingsOpen || isConfirmationOpen || isTrickShowing) return;
+        if (isBirthdayOpen || isConfirmationOpen || isTrickShowing) return;
 
         String text = LEFT_CLICK_PHRASES.get(random.nextInt(LEFT_CLICK_PHRASES.size()));
         dialogueQueue.add(new DialogueLine(CharacterId.CHARLES, text));
@@ -115,7 +141,7 @@ public class CharlesWindow extends CharacterWindow {
 
     @Override
     public void showBubble(String text) {
-        if (isContextMenuOpen || isBirthdayOpen || isSettingsOpen || isConfirmationOpen) {
+        if (isContextMenuOpen || isBirthdayOpen || isConfirmationOpen) {
             dialogueQueue.onBubbleDone();
             return;
         }
@@ -127,12 +153,22 @@ public class CharlesWindow extends CharacterWindow {
 
         if (!revealed) {
             setState(CharacterState.CURIOUS);
-            reactToEvent("О? Неужто Вас заинтересовали эти знаки вопроса?");
-        }
 
-        isBirthdayOpen = true;
-        birthdayDialog = new BirthdayDialog(this);
-        birthdayDialog.setVisible(true);
+            DialogueLine line = new DialogueLine(CharacterId.CHARLES,
+                    "Тебя так непреодолимо манят эти знаки вопроса. Человеческое любопытство — мой самый любимый и предсказуемый порок. Я покопался в воспоминаниях и снах твоих друзей и обнаружил небольшие послания. Ради такого дня, я даже не стал их искажать. Наслаждайся их правдой и искренностью, это блюдо я даже не заберу себе.");
+
+            dialogueQueue.addWithCallback(line, () -> {
+                prefs.putBoolean(SURPRISE_REVEALED, true);
+                isBirthdayOpen = true;
+                birthdayDialog = new BirthdayDialog(this);
+                birthdayDialog.setVisible(true);
+            });
+
+        } else {
+            isBirthdayOpen = true;
+            birthdayDialog = new BirthdayDialog(this);
+            birthdayDialog.setVisible(true);
+        }
     }
 
     private void closeBirthday() {
@@ -174,7 +210,7 @@ public class CharlesWindow extends CharacterWindow {
     public void showConfirmationDialog() {
         isConfirmationOpen = true;
         confirmationWindow = new ConfirmationWindow(
-                "Вы уверены, что хотите уйти?",
+                "Уверен, что хочешь уйти?",
                 this,
                 this::shutDownApplication,
                 () -> { isConfirmationOpen = false; confirmationWindow = null; }
@@ -182,25 +218,13 @@ public class CharlesWindow extends CharacterWindow {
         confirmationWindow.setVisible(true);
     }
 
-    public void showSettingsWindow() {
-        if (isSettingsOpen) { closeSettings(); return; }
-        isSettingsOpen = true;
-        settingsWindow = new SettingsWindow(this);
-        settingsWindow.setVisible(true);
-    }
-
-    public void onSettingsWindowClosed() {
-        settingsWindow = null;
-        isSettingsOpen = false;
-    }
-
-    private void closeSettings() {
-        if (settingsWindow != null) {
-            settingsWindow.dispose();
-            settingsWindow = null;
-        }
-
-        isSettingsOpen = false;
+    public void showHalloweenReaction() {
+        MonthDay today = MonthDay.from(LocalDate.now());
+        List<List<DialogueLine>> pool = today.equals(HALLOWEEN)
+                ? HALLOWEEN_DIALOGUES
+                : WAITING_REACTIONS;
+        List<DialogueLine> lines = pool.get(random.nextInt(pool.size()));
+        dialogueQueue.addAll(lines);
     }
 
     private void shutDownApplication() {
@@ -232,11 +256,6 @@ public class CharlesWindow extends CharacterWindow {
             birthdayDialog = null;
         }
 
-        if (settingsWindow != null) {
-            settingsWindow.dispose();
-            settingsWindow = null;
-        }
-
         if (confirmationWindow != null) {
             confirmationWindow.dispose();
             confirmationWindow = null;
@@ -244,7 +263,6 @@ public class CharlesWindow extends CharacterWindow {
 
         isContextMenuOpen  = false;
         isBirthdayOpen     = false;
-        isSettingsOpen     = false;
         isConfirmationOpen = false;
     }
 }

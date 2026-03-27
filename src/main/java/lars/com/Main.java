@@ -10,6 +10,9 @@ import javax.swing.*;
 public class Main {
     public static void main(String[] args) {
 
+        java.util.prefs.Preferences.userNodeForPackage(lars.com.UI.CharlesWindow.class)
+                .putBoolean("surpriseRevealed", false);
+
         System.setProperty("jna.tmpdir", System.getProperty("java.io.tmpdir"));
         System.setProperty("jna.nounpack", "false");
         System.setProperty("java.io.tmpdir", System.getProperty("java.io.tmpdir"));
@@ -49,7 +52,6 @@ public class Main {
                 controller.cleanup();
                 bugCloneEvent.stop();
                 socketServer.stop();
-                System.runFinalization();
                 try { Thread.sleep(500); } catch (InterruptedException e) { /* ignore */ }
                 Runtime.getRuntime().halt(0);
             }));

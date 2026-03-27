@@ -57,10 +57,12 @@ public class ConfirmationWindow extends JWindow {
     }
 
     private void positionDialog() {
-        Point amonLocation = charlesWindow.getLocation();
+        Point loc = charlesWindow.getLocation();
+        int charW = charlesWindow.getWidth();
+        int charH = charlesWindow.getHeight();
 
-        int x = amonLocation.x - getWidth() - 10;
-        int y = amonLocation.y + 130;
+        int x = loc.x + charW / 2 - getWidth() / 2;
+        int y = loc.y + charH - getHeight() - 40;
 
         setLocation(x, y);
     }
@@ -176,8 +178,8 @@ public class ConfirmationWindow extends JWindow {
             drawTextWithBorder(g2d, message);
 
             // Рисуем кнопки
-            drawButton(g2d, yesButtonBounds, "Да", yesButtonHovered, new Color(65, 65, 75));
-            drawButton(g2d, noButtonBounds, "Нет", noButtonHovered, new Color(65, 65, 75));
+            drawButton(g2d, yesButtonBounds, "Да", yesButtonHovered, new Color(75, 75, 78));
+            drawButton(g2d, noButtonBounds, "Нет", noButtonHovered, new Color(75, 75, 78));
         }
 
         private void drawTextWithBorder(Graphics2D g2d, String text) {

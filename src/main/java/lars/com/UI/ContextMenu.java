@@ -21,7 +21,7 @@ public class ContextMenu extends JWindow {
     private static final int BORDER_THICKNESS = 1;
     private static final int TEXT_PADDING_TOP = 70;
 
-    private static final Color BUTTON_COLOR = new Color(65, 65, 75);
+    private static final Color BUTTON_COLOR = new Color(75, 75, 78);
     private static final int BUTTON_WIDTH  = 120;
     private static final int BUTTON_HEIGHT = 29;
     private static final int BUTTON_GAP    = 8;
@@ -33,16 +33,15 @@ public class ContextMenu extends JWindow {
 
     private Rectangle surpriseButtonBounds;
     private Rectangle timerButtonBounds;
-    private Rectangle settingsButtonBounds;
+    private Rectangle halloweenButtonBounds;
     private Rectangle exitButtonBounds;
-
 
     private boolean surpriseHovered = false;
     private boolean timerHovered = false;
-    private boolean settingsHovered = false;
+    private boolean halloweenHovered = false;
     private boolean exitHovered = false;
 
-    private static final String HEADER = "Хм-м, что же\nВы хотите сделать?";
+    private static final String HEADER = "Мой небольшой каталог ‘дозволенного’. Нажимай, не стесняйся.";
     private final CharlesWindow charlesWindow;
 
     // для глитч текста в знаке вопроса
@@ -86,8 +85,8 @@ public class ContextMenu extends JWindow {
 
         surpriseButtonBounds = new Rectangle(buttonX, firstButtonY, BUTTON_WIDTH, BUTTON_HEIGHT);
         timerButtonBounds = new Rectangle(buttonX, firstButtonY + (BUTTON_HEIGHT + BUTTON_GAP), BUTTON_WIDTH, BUTTON_HEIGHT);
-        settingsButtonBounds = new Rectangle(buttonX, timerButtonBounds.y + BUTTON_HEIGHT + BUTTON_GAP, BUTTON_WIDTH, BUTTON_HEIGHT);
-        exitButtonBounds = new Rectangle(buttonX, settingsButtonBounds.y + BUTTON_HEIGHT + BUTTON_GAP, BUTTON_WIDTH, BUTTON_HEIGHT);
+        halloweenButtonBounds = new Rectangle(buttonX, timerButtonBounds.y + BUTTON_HEIGHT + BUTTON_GAP, BUTTON_WIDTH, BUTTON_HEIGHT);
+        exitButtonBounds = new Rectangle(buttonX, halloweenButtonBounds.y + BUTTON_HEIGHT + BUTTON_GAP, BUTTON_WIDTH, BUTTON_HEIGHT);
 
         add(new ContextPanel());
 
@@ -96,10 +95,13 @@ public class ContextMenu extends JWindow {
     }
 
     private void positionDialog() {
-        Point amonLocation = charlesWindow.getLocation();
+        Point charlesPos = charlesWindow.getLocation();
+        int charW = charlesWindow.getWidth();
+        int charH = charlesWindow.getHeight();
 
-        int x = amonLocation.x - getWidth() + 20;
-        int y = amonLocation.y + 10;
+        int x = charlesPos.x + (charW / 2) - (getWidth() / 2) - 110;
+
+        int y = charlesPos.y + (charH / 2) - 100;
 
         setLocation(x, y);
     }
@@ -171,7 +173,7 @@ public class ContextMenu extends JWindow {
                     Point p = e.getPoint();
                     surpriseHovered = surpriseButtonBounds.contains(p);
                     timerHovered = timerButtonBounds.contains(p);
-                    settingsHovered = settingsButtonBounds.contains(p);
+                    halloweenHovered = halloweenButtonBounds.contains(p);
                     exitHovered = exitButtonBounds.contains(p);
                     repaint();
                 }
@@ -180,7 +182,7 @@ public class ContextMenu extends JWindow {
             addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseExited(MouseEvent e) {
-                    surpriseHovered = timerHovered = exitHovered = settingsHovered = false;
+                    surpriseHovered = timerHovered = exitHovered = halloweenHovered = false;
                     repaint();
                 }
 
@@ -199,11 +201,11 @@ public class ContextMenu extends JWindow {
                         charlesWindow.onContextMenuClosed();
                         dispose();
                         if (onTimerClick != null) onTimerClick.run();
-                    } else if (settingsButtonBounds.contains(p)) {
+                    } else if (halloweenButtonBounds.contains(p)) {
                         dispose();
                         charlesWindow.onContextMenuClosed();
                         charlesWindow.setContextMenuOpen(false);
-                        charlesWindow.showSettingsWindow();
+                        charlesWindow.showHalloweenReaction();
                     } else if (exitButtonBounds.contains(p)) {
                         dispose();
                         charlesWindow.onContextMenuClosed();
@@ -237,7 +239,7 @@ public class ContextMenu extends JWindow {
                 drawButton(g2d, surpriseButtonBounds, "Сюрприз!", surpriseHovered, BUTTON_COLOR);
             }
             drawButton(g2d, timerButtonBounds,"Таймер", timerHovered, BUTTON_COLOR);
-            drawButton(g2d, settingsButtonBounds, "Настройки", settingsHovered, BUTTON_COLOR);
+            drawButton(g2d, halloweenButtonBounds, "Хеллоуин?...", halloweenHovered, BUTTON_COLOR);
             drawButton(g2d, exitButtonBounds, "Выход", exitHovered, BUTTON_COLOR);
         }
 
@@ -297,19 +299,19 @@ public class ContextMenu extends JWindow {
     }
 
     private void drawGlitchButton(Graphics2D g2d, Rectangle bounds, boolean isHovered, Color baseColor) {
-        Color buttonColor = isHovered ? baseColor.brighter() : baseColor;
+        Color buttonColor = isHovered ? new Color(68, 63, 82) : baseColor;  // ← как у drawButton
 
-        // иногда рисуем кнопку со смещением для эффекта
         int bx = bounds.x + (glitchActive ? glitchOffsetX : 0);
         int by = bounds.y + (glitchActive ? glitchOffsetY : 0);
 
         g2d.setColor(buttonColor);
-        g2d.fillRoundRect(bx, by, bounds.width, bounds.height, 10, 10);
-        g2d.setColor(buttonColor.darker());
-        g2d.setStroke(new BasicStroke(2));
-        g2d.drawRoundRect(bx, by, bounds.width, bounds.height, 10, 10);
+        g2d.fillRoundRect(bx, by, bounds.width, bounds.height, 12, 12);
 
-        // если глитч активен, рисуем красную "тень" со смещением
+        // Обводка — как у всех остальных кнопок
+        g2d.setColor(new Color(148, 143, 165));
+        g2d.setStroke(new BasicStroke(1.5f));
+        g2d.drawRoundRect(bx, by, bounds.width, bounds.height, 12, 12);
+
         Font buttonFont = new Font(FONT_NAME, Font.BOLD, 14);
         g2d.setFont(buttonFont);
         FontMetrics fm = g2d.getFontMetrics();
@@ -318,15 +320,16 @@ public class ContextMenu extends JWindow {
         int textY = bounds.y + (bounds.height - fm.getHeight()) / 2 + fm.getAscent() + glitchOffsetY;
 
         if (glitchActive) {
-            // красная тень
             g2d.setColor(new Color(255, 0, 0, 150));
             g2d.drawString(glitchText, textX + 2, textY);
-            // синяя тень
             g2d.setColor(new Color(0, 0, 255, 150));
             g2d.drawString(glitchText, textX - 2, textY);
         }
 
-        // основной текст
+        // Тень — как у обычных кнопок
+        g2d.setColor(new Color(0, 0, 20, 130));
+        g2d.drawString(glitchText, textX + 1, textY + 1);
+
         g2d.setColor(glitchColor);
         g2d.drawString(glitchText, textX, textY);
     }

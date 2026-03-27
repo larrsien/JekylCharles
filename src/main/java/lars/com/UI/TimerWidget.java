@@ -344,24 +344,23 @@ public class TimerWidget extends JDialog {
 
         switch (outcome) {
             case 0:
-                safeReact("Таймер сброшен. Хотите попробовать ещё раз?");
+                safeReact("Ой, все исчезло. Как и твои амбиции на сегодня?");
                 break;
 
             case 1:
                 // прибавить или отнять от фокуса
                 if (random.nextBoolean()) {
                     focusMinutes = Math.min(99, focusMinutes + minutes);
-                    safeReact("Сколько же я добавил минут к Вашему рабочему времени? " + minutes +
-                                    "? Надеюсь, Вам нравится. А если нет, то так даже забавнее.");
+                    safeReact("Выжми из себя все соки, пока я смотрю.");
                 } else {
                     // отнимаем, но не меньше 1 минуты
                     if (focusMinutes - minutes >= 1) {
                         focusMinutes -= minutes;
-                        safeReact(minutes + "! Это то, на сколько сократилось Ваше рабочее время. Не благодарите.");
+                        safeReact("Как быстро тает твой энтузиазм. Надеюсь, ты так спешишь, чтобы уделить мне как можно больше внимания.");
                     } else {
                         // нечего отнимать и тогда минимум
                         focusMinutes = 1;
-                        safeReact("Я позаимствовал Ваше рабочее время. Вы же не против, правда?");
+                        safeReact("Целых шестьдесят секунд, чтобы доказать свою полезность…");
                     }
                 }
                 focusField.setText(String.format("%02d", focusMinutes));
@@ -373,14 +372,14 @@ public class TimerWidget extends JDialog {
                 // прибавить или отнять от перерыва
                 if (random.nextBoolean()) {
                     breakMinutes = Math.min(99, breakMinutes + minutes);
-                    charlesWindow.reactToEvent("Сегодня я необычайно щедр: к Вашему времени отдыха прибавилось несколько минут, а именно – " + minutes + ". Потратьте их с умом, полагаю?");
+                    charlesWindow.reactToEvent("Иллюзия свободы становится все длиннее.");
                 } else {
                     if (breakMinutes - minutes >= 1) {
                         breakMinutes -= minutes;
-                        charlesWindow.reactToEvent("Кому-то предстоит отдыхать меньше, чем ему хотелось! Какая досада. Или Вы всё же поменяете время отдыха на то, которое хотели установить раньше? Ха-ха.");
+                        charlesWindow.reactToEvent("Я позволил себе забрать пару твоих свободных минут. Мне они нужнее. А ты... возвращайся к работе. Твой отдых теперь мой.");
                     } else {
                         breakMinutes = 1;
-                        charlesWindow.reactToEvent("Ой, Вы будете отдыхать всего 1 минуту? Как жаль!");
+                        charlesWindow.reactToEvent("Если ты себя наказываешь за что-то таким отрезком времени, то лучше расскажи мне. Я придумаю пытку изощреннее.");
                     }
                 }
                 breakField.setText(String.format("%02d", breakMinutes));
@@ -408,7 +407,7 @@ public class TimerWidget extends JDialog {
         countdownTimer.start();
 
         if (random.nextDouble() >= TRICK_CHANCE) {
-            charlesWindow.reactToEvent("Что же, начнём?");
+            charlesWindow.reactToEvent("Постарайся не разочаровать меня. Сколько в этот раз ты продержишься, прежде чем начнёшь умолять меня об перерыве?");
         }
         timerPanel.repaint();
     }
@@ -427,11 +426,11 @@ public class TimerWidget extends JDialog {
         if (isFocusPhase) {
             secondsRemaining = focusMinutes * 60;
             playSound();
-            charlesWindow.reactToEvent("Перерыв окончен. Снова за работу, полагаю?");
+            charlesWindow.reactToEvent("Время вышло. Ты был хорошим мальчиком. Теперь ты можешь снова обратить внимание на меня.");
         } else {
             secondsRemaining = breakMinutes * 60;
             playSound();
-            charlesWindow.reactToEvent("Время перерыва! Насколько же продуктивно Вы поработали?");
+            charlesWindow.reactToEvent("Пора снова надевать ошейник рутины. Занимайся своими делами, пока я не придумал тебе новые.");
         }
     }
 
