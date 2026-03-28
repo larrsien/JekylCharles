@@ -165,7 +165,7 @@ public class TrickDialog extends JWindow {
             Font font = new Font(FONT_NAME, Font.BOLD, FONT_SIZE);
             g2d.setFont(font);
             FontMetrics fm = g2d.getFontMetrics();
-            String text = "Желаете сыграть?";
+            String text = "Что выберешь?";
             int x = (OUR_WIDTH - fm.stringWidth(text)) / 2;
             int y = 50;
 
@@ -178,8 +178,8 @@ public class TrickDialog extends JWindow {
             g2d.setColor(TEXT_COLOR);
             g2d.drawString(text, x, y);
 
-            drawButton(g2d, button1Bounds, "Да!", button1Hovered, glitch1Active, glitch1OffsetX, glitch1OffsetY);
-            drawButton(g2d, button2Bounds, "Да!", button2Hovered, glitch2Active, glitch2OffsetX, glitch2OffsetY);
+            drawButton(g2d, button1Bounds, "???", button1Hovered, glitch1Active, glitch1OffsetX, glitch1OffsetY);
+            drawButton(g2d, button2Bounds, "???", button2Hovered, glitch2Active, glitch2OffsetX, glitch2OffsetY);
         }
 
         private void drawButton(Graphics2D g2d, Rectangle bounds, String text,

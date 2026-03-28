@@ -25,10 +25,7 @@ public class SpriteManager {
     private final Map<Integer, List<BufferedImage>> bugVariants = new HashMap<>();
     private final Random random = new Random();
 
-    /**
-     * @param characterName имя персонажа (напр. "jekyll", "charles").
-     *                      Используется и как папка, и как префикс файлов.
-     */
+
     public SpriteManager(String characterName) {
         this.characterName = characterName.toLowerCase();
         this.filePrefix = this.characterName + "_";
@@ -147,8 +144,6 @@ public class SpriteManager {
         }
     }
 
-    // ─── Публичный API ──────────────────────────────────────────────────────
-
     public BufferedImage getFrame(CharacterState state, int frameIndex) {
         List<BufferedImage> sprites = getSprites(state);
         if (sprites == null || sprites.isEmpty()) return null;
@@ -183,12 +178,6 @@ public class SpriteManager {
         }
         return bugVariants.get(random.nextInt(bugVariants.size()));
     }
-
-    public String getCharacterName() {
-        return characterName;
-    }
-
-    // ─── Утилиты ────────────────────────────────────────────────────────────
 
     private void sortByFrameNumber(File[] files, String regex) {
         Pattern pattern = Pattern.compile(regex);

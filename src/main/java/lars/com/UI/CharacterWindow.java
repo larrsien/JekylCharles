@@ -7,17 +7,16 @@ import lars.com.model.CharacterState;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.util.Random;
 import java.util.function.BiConsumer;
 
 public abstract class CharacterWindow extends JWindow {
 
-    protected static final int OUR_WIDTH  = 309;
+    protected static final int OUR_WIDTH  = 327;
     protected static final int OUR_HEIGHT = 443;
+    private static final double DRAG_SCALE = 1.15;
 
     private static final int DRAG_THRESHOLD = 5;
 
@@ -67,6 +66,16 @@ public abstract class CharacterWindow extends JWindow {
         setupMouse();
         setupIdleTimers();
         setupFloatAnimation();
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowDeactivated(WindowEvent e) {
+                SwingUtilities.invokeLater(() -> {
+                    setAlwaysOnTop(false);
+                    setAlwaysOnTop(true);
+                });
+            }
+        });
     }
 
     protected abstract JPanel buildSpritePanel();
@@ -106,13 +115,17 @@ public abstract class CharacterWindow extends JWindow {
         return currentState;
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    //  Баблы
-    // ════════════════════════════════════════════════════════════════════════
 
     public void showBubble(String text) {
+        if (currentState == CharacterState.SLEEPING) {
+            setState(CharacterState.CURIOUS);
+            resetIdleTimers();
+        }
         clearBubble();
-        reactionBubble = new ReactionBubble(text, this, () -> dialogueQueue.onBubbleDone());
+        reactionBubble = new ReactionBubble(text, this, () -> {
+            reactionBubble = null;
+            dialogueQueue.onBubbleDone();
+        });
         reactionBubble.setVisible(true);
     }
 
@@ -122,10 +135,6 @@ public abstract class CharacterWindow extends JWindow {
             reactionBubble = null;
         }
     }
-
-    // ════════════════════════════════════════════════════════════════════════
-    //  Плавающая анимация
-    // ════════════════════════════════════════════════════════════════════════
 
     private void setupFloatAnimation() {
         floatingTimer = new Timer(16, e -> {
@@ -147,24 +156,18 @@ public abstract class CharacterWindow extends JWindow {
         setLocation(x, y);
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    //  Idle / Sleep таймеры
-    // ════════════════════════════════════════════════════════════════════════
-
     private void setupIdleTimers() {
         int frameDelay = spriteManager.getFrameDelay(CharacterState.IDLE);
         idleTimer = new Timer(frameDelay, e -> {
-            // Анимация (смена кадров) только для CURIOUS
             if (currentState == CharacterState.CURIOUS) {
                 currentFrame = (currentFrame + 1) % Math.max(1,
                         spriteManager.getFrameCount(currentState));
                 if (spritePanel != null) spritePanel.repaint();
             }
-            // IDLE, SLEEPING, DRAGGING — статичный кадр, не трогаем
         });
         idleTimer.start();
 
-        idleToSleepTimer = new Timer(5 * 60 * 1000, e -> {
+        idleToSleepTimer = new Timer(10 * 60 * 1000, e -> {
             if (currentState == CharacterState.IDLE) {
                 setState(CharacterState.SLEEPING);   // уведомит контроллер
             }
@@ -184,10 +187,6 @@ public abstract class CharacterWindow extends JWindow {
         }
     }
 
-    // ════════════════════════════════════════════════════════════════════════
-    //  Мышь
-    // ════════════════════════════════════════════════════════════════════════
-
     private void setupMouse() {
         MouseAdapter ma = new MouseAdapter() {
             @Override
@@ -201,8 +200,16 @@ public abstract class CharacterWindow extends JWindow {
             public void mouseReleased(MouseEvent e) {
                 if (isDragging) {
                     isDragging = false;
+                    Point loc = getLocation();
+                    int curW = getWidth();
+                    int curH = getHeight();
+                    setLocation(loc.x + (curW - OUR_WIDTH) / 2,
+                            loc.y + (curH - OUR_HEIGHT) / 2);
+                    setSize(OUR_WIDTH, OUR_HEIGHT);
+                    spritePanel.setPreferredSize(new Dimension(OUR_WIDTH, OUR_HEIGHT));
+
                     baseY = getLocation().y;
-                    if (floatingTimer != null) floatingTimer.start();  // ← возобновить
+                    if (floatingTimer != null) floatingTimer.start();
                     setState(CharacterState.IDLE);
                     resetIdleTimers();
                     return;
@@ -223,16 +230,34 @@ public abstract class CharacterWindow extends JWindow {
                 int dy = e.getY() - pressPoint.y;
                 if (!isDragging && Math.abs(dx) + Math.abs(dy) > DRAG_THRESHOLD) {
                     isDragging = true;
-                    if (floatingTimer != null) floatingTimer.stop();  // ← остановить
+                    if (floatingTimer != null) floatingTimer.stop();
                     setState(CharacterState.DRAGGING);
                     dialogueQueue.interrupt();
                     clearBubble();
                     onDragStart();
+
+                    int newW = (int)(OUR_WIDTH * DRAG_SCALE);
+                    int newH = (int)(OUR_HEIGHT * DRAG_SCALE);
+                    Point loc = getLocation();
+                    setLocation(loc.x - (newW - OUR_WIDTH) / 2,
+                            loc.y - (newH - OUR_HEIGHT) / 2);
+                    setSize(newW, newH);
+                    spritePanel.setPreferredSize(new Dimension(newW, newH));
+                    dragOffset = new Point(
+                            (int)(dragOffset.x * DRAG_SCALE),
+                            (int)(dragOffset.y * DRAG_SCALE)
+                    );
                 }
                 if (isDragging) {
-                    Point loc = getLocation();
-                    setLocation(loc.x + e.getX() - dragOffset.x,
-                            loc.y + e.getY() - dragOffset.y);
+                    int newX = getLocation().x + e.getX() - dragOffset.x;
+                    int newY = getLocation().y + e.getY() - dragOffset.y;
+
+                    Rectangle sb = GraphicsEnvironment.getLocalGraphicsEnvironment()
+                            .getMaximumWindowBounds();
+                    newX = Math.max(sb.x, Math.min(newX, sb.x + sb.width - getWidth()));
+                    newY = Math.max(sb.y, Math.min(newY, sb.y + sb.height - getHeight()));
+
+                    setLocation(newX, newY);
                 }
             }
         };

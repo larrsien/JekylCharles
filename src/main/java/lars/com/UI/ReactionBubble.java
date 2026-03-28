@@ -14,10 +14,10 @@ import java.io.InputStream;
 
 public class ReactionBubble extends JWindow {
 
-    private static final int OUR_WIDTH = 300;
-    private static final int OUR_HEIGHT = 150;
+    private static final int OUR_WIDTH = 310;
+    private static final int OUR_HEIGHT = 160;
 
-    private static final int TEXT_PADDING_LEFT = 45;
+    private static final int TEXT_PADDING_LEFT = 50;
     private static final int TEXT_PADDING_TOP = 43;
     private static final int TEXT_PADDING_RIGHT = 37;
     private static final int TEXT_PADDING_BOTTOM = 40;
@@ -48,6 +48,7 @@ public class ReactionBubble extends JWindow {
     private Timer closeTimer;
 
     private boolean isTyping = false;
+    private boolean cleaned = false;
 
     public ReactionBubble(String reaction, CharacterWindow characterWindow, Runnable onDone) {
         this.characterWindow = characterWindow;
@@ -226,11 +227,13 @@ public class ReactionBubble extends JWindow {
     }
 
     public void cleanup() {
-        if (typingTimer != null)      typingTimer.stop();
-        if (autoAdvanceTimer != null)  autoAdvanceTimer.stop();
-        if (closeTimer != null)        closeTimer.stop();
-        dispose();
+        if (cleaned) return;
+        cleaned = true;
 
+        if (typingTimer != null) typingTimer.stop();
+        if (autoAdvanceTimer != null) autoAdvanceTimer.stop();
+        if (closeTimer != null) closeTimer.stop();
+        dispose();
         if (onDone != null) {
             onDone.run();
         }

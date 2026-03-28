@@ -12,6 +12,7 @@ import lars.com.reactions.DualResponseLibrary;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
+import java.util.Random;
 
 
 public class PetController {
@@ -20,6 +21,9 @@ public class PetController {
     private JekyllWindow jekyll;
     private CharlesWindow charles;
     private final DualResponseLibrary dualResponseLibrary;
+    private final Random random = new Random();
+    private Timer curiousToIdleTimer;
+    private Timer idleSpecialTimer;
 
     public PetController(SpriteManager jekyllSprites, SpriteManager charlesSprites) {
 
@@ -41,6 +45,7 @@ public class PetController {
         jekyll.setOnStateChange(this::onCharacterStateChanged);
         charles.setOnStateChange(this::onCharacterStateChanged);
 
+        setupIdleSpecialTimer();
         positionWindows();
 
         jekyll.setVisible(true);
@@ -94,12 +99,19 @@ public class PetController {
         }
         List<DialogueLine> lines = dualResponseLibrary.getResponse(category);
         if (!lines.isEmpty()) {
+            charles.setState(CharacterState.CURIOUS);
+
+            if (curiousToIdleTimer != null) curiousToIdleTimer.stop();
+            curiousToIdleTimer = new Timer(4 * 60 * 1000, e -> {
+                if (charles.getCurrentState() == CharacterState.CURIOUS) {
+                    charles.setState(CharacterState.IDLE);
+                }
+            });
+            curiousToIdleTimer.setRepeats(false);
+            curiousToIdleTimer.start();
+
             queue.addAll(lines);
         }
-    }
-
-    public void reactAs(CharacterId who, String text) {
-        queue.add(new DialogueLine(who, text));
     }
 
     private void positionWindows() {
@@ -115,11 +127,30 @@ public class PetController {
         jekyll.placeAt(jekyllX,   bottom - jekyll.getHeight());
     }
 
+    private void setupIdleSpecialTimer() {
+        idleSpecialTimer = new Timer(7 * 60 * 1000, e -> {
+            if (charles.getCurrentState() == CharacterState.IDLE
+                    && jekyll.getCurrentState() == CharacterState.IDLE
+                    && !queue.isActive()) {
+                if (random.nextInt(100) < 10) {
+                    List<DialogueLine> lines = dualResponseLibrary.getResponse("idle_special");
+                    if (!lines.isEmpty()) {
+                        queue.addAll(lines);
+                    }
+                }
+            }
+        });
+        idleSpecialTimer.setRepeats(true);
+        idleSpecialTimer.start();
+    }
+
     public CharlesWindow  getCharles() {
         return charles;
     }
 
     public void cleanup() {
+        if (curiousToIdleTimer != null) curiousToIdleTimer.stop();
+        if (idleSpecialTimer != null) idleSpecialTimer.stop();
         jekyll.cleanup();
         charles.cleanup();
     }

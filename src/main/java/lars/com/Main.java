@@ -10,9 +10,6 @@ import javax.swing.*;
 public class Main {
     public static void main(String[] args) {
 
-        java.util.prefs.Preferences.userNodeForPackage(lars.com.UI.CharlesWindow.class)
-                .putBoolean("surpriseRevealed", false);
-
         System.setProperty("jna.tmpdir", System.getProperty("java.io.tmpdir"));
         System.setProperty("jna.nounpack", "false");
         System.setProperty("java.io.tmpdir", System.getProperty("java.io.tmpdir"));

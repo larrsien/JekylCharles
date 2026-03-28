@@ -12,14 +12,15 @@ import java.util.Random;
 
 public class ContextMenu extends JWindow {
 
-    private static final int OUR_WIDTH  = 250;
-    private static final int OUR_HEIGHT = 322; //было 274
+    private static final int OUR_WIDTH  = 290;
+    private static final int OUR_HEIGHT = 332; //было 274
 
     private static final int FONT_SIZE = 13;
     private static final String FONT_NAME = "Georgia";
     private static final Color TEXT_COLOR = Color.WHITE;
     private static final int BORDER_THICKNESS = 1;
     private static final int TEXT_PADDING_TOP = 70;
+    private static final int TEXT_PADDING_HORIZONTAL = 45;
 
     private static final Color BUTTON_COLOR = new Color(75, 75, 78);
     private static final int BUTTON_WIDTH  = 120;
@@ -41,7 +42,7 @@ public class ContextMenu extends JWindow {
     private boolean halloweenHovered = false;
     private boolean exitHovered = false;
 
-    private static final String HEADER = "Мой небольшой каталог ‘дозволенного’. Нажимай, не стесняйся.";
+    private static final String HEADER = "Мой небольшой \n каталог ‘дозволенного’. Нажимай, не стесняйся.";
     private final CharlesWindow charlesWindow;
 
     // для глитч текста в знаке вопроса
@@ -81,7 +82,7 @@ public class ContextMenu extends JWindow {
         setAlwaysOnTop(true);
 
         int buttonX = (OUR_WIDTH - BUTTON_WIDTH) / 2;
-        int firstButtonY = TEXT_PADDING_TOP + 47;
+        int firstButtonY = TEXT_PADDING_TOP + 60;
 
         surpriseButtonBounds = new Rectangle(buttonX, firstButtonY, BUTTON_WIDTH, BUTTON_HEIGHT);
         timerButtonBounds = new Rectangle(buttonX, firstButtonY + (BUTTON_HEIGHT + BUTTON_GAP), BUTTON_WIDTH, BUTTON_HEIGHT);
@@ -248,7 +249,27 @@ public class ContextMenu extends JWindow {
             g2d.setFont(font);
             FontMetrics fm = g2d.getFontMetrics();
 
-            String[] lines = text.split("\n");
+            int maxWidth = OUR_WIDTH - 2 * TEXT_PADDING_HORIZONTAL;
+            java.util.List<String> lines = new java.util.ArrayList<>();
+
+            // Разбиваем текст на строки по ширине
+            for (String paragraph : text.split("\n")) {
+                String[] words = paragraph.split(" ");
+                StringBuilder currentLine = new StringBuilder();
+                for (String word : words) {
+                    String test = currentLine.length() == 0
+                            ? word
+                            : currentLine + " " + word;
+                    if (fm.stringWidth(test) > maxWidth && currentLine.length() > 0) {
+                        lines.add(currentLine.toString());
+                        currentLine = new StringBuilder(word);
+                    } else {
+                        currentLine = new StringBuilder(test);
+                    }
+                }
+                if (currentLine.length() > 0) lines.add(currentLine.toString());
+            }
+
             int lineHeight = fm.getHeight();
             int startY = TEXT_PADDING_TOP + fm.getAscent();
 

@@ -47,8 +47,17 @@ public class InternalProcessMonitoring {
 
         // Снимок текущих процессов, чтобы не реагировать на уже запущенное
         this.previousProcesses = new HashSet<>();
+        this.previousProcesses = new HashSet<>();
         for (OSProcess p : operatingSystem.getProcesses()) {
-            previousProcesses.add(p.getName().toLowerCase());
+            String name = p.getName().toLowerCase();
+
+            if (name.contains("javaw")) {
+                String cmd = p.getCommandLine().toLowerCase();
+                if (cmd.contains("minecraft")) {
+                    name = "minecraft";
+                }
+            }
+            previousProcesses.add(name);
         }
     }
 
@@ -83,6 +92,14 @@ public class InternalProcessMonitoring {
 
             for (OSProcess osProcess : processes) {
                 String processName = osProcess.getName().toLowerCase();
+
+                if (processName.contains("javaw")) {
+                    String cmd = osProcess.getCommandLine().toLowerCase();
+                    if (cmd.contains("minecraft")) {
+                        processName = "minecraft";
+                    }
+                }
+
                 currentProcesses.add(processName);
 
                 if (!previousProcesses.contains(processName)) {
