@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import lars.com.PetController;
 
+import javax.swing.*;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -104,7 +105,8 @@ public class JCSocketServer {
 
             if (category != null && !category.equals("unknown")) {
                 lastReactionTime = now;
-                petController.react(category);
+                final String cat = category;
+                SwingUtilities.invokeLater(() -> petController.react(cat));
                 sendResponse(out, "Реакция на: " + category);
             }
 

@@ -27,6 +27,7 @@ public class InternalProcessMonitoring {
             {"repo", "repo"},
             {"minecraft", "minecraft"},
             {"discord", "discord"},
+            {"peak", "peak"},
             {"steam", "steam"},
             {"photoshop", "photoshop"},
             {"sixvpn", "sixvpn"},
@@ -46,7 +47,6 @@ public class InternalProcessMonitoring {
         this.scheduler = Executors.newScheduledThreadPool(1);
 
         // Снимок текущих процессов, чтобы не реагировать на уже запущенное
-        this.previousProcesses = new HashSet<>();
         this.previousProcesses = new HashSet<>();
         for (OSProcess p : operatingSystem.getProcesses()) {
             String name = p.getName().toLowerCase();

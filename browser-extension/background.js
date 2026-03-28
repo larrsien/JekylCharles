@@ -67,7 +67,7 @@ function scheduleReconnect() {
 }
 
 function handleNativeMessage(message) {
-  console.log("Получено от Амона:", message);
+  console.log("Получено:", message);
 }
 
 function handleDisconnect() {
@@ -85,10 +85,10 @@ function connectToNativeApp() {
   console.log(`Попытка подключения #${reconnectAttempts + 1}...`);
 
   try {
-    port = chrome.runtime.connectNative('com.lars.amon.browser');
+    port = chrome.runtime.connectNative('com.lars.briley.browser');
     port.onMessage.addListener(handleNativeMessage);
     port.onDisconnect.addListener(handleDisconnect);
-    console.log("Амон подключён к браузеру!");
+    console.log("Подключено к браузеру!");
     reconnectAttempts = 0;
     isConnecting = false;
   } catch (error) {
